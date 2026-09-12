@@ -31,6 +31,11 @@ from .cns_backend import (
     create_cns_composer,
 )
 
+from .cns_integration import (
+    HAS_CNS,
+    get_cns_status,
+)
+
 from .adapters_cns import (
     SwizzleAdapter,
     GhostToolsAdapter,
@@ -53,6 +58,9 @@ __all__ = [
     "cns_canonicalize",
     "cns_converge",
     "create_cns_composer",
+    # CNS Integration
+    "HAS_CNS",
+    "get_cns_status",
     # CNS Adapters
     "SwizzleAdapter",
     "GhostToolsAdapter",

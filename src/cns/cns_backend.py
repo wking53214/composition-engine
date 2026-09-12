@@ -1,44 +1,35 @@
 """CNS-specific backend for UniversalComposer.
 
-Provides CNS outcome canonicalization (PASS/RETRY/TERMINAL_BREACH),
-subject binding via cryptographic digest, and convergence detection.
+Uses authoritative CNS infrastructure when available:
+- GateOutcome from cns.gate (PASS/RETRY/TERMINAL_BREACH)
+- subject_digest from cns.gate (cryptographic binding)
+- resolve from cns.gate (outcome cascade)
+
+Falls back to local implementations if CNS not installed.
 """
 
 from __future__ import annotations
 
-import hashlib
-import json
-from enum import Enum
 from typing import Any, Dict, List
 
 from .core import CompositionStep, UniversalComposer
-
-
-class GateOutcome(str, Enum):
-    """CNS canonical outcomes."""
-    PASS = "pass"
-    RETRY = "retry"
-    TERMINAL_BREACH = "terminal_breach"
-
-
-def subject_digest(subject: Dict[str, Any]) -> str:
-    """Cryptographic hash of subject for binding."""
-    subject_json = json.dumps(subject, sort_keys=True)
-    return hashlib.sha256(subject_json.encode()).hexdigest()
+from .cns_integration import GateOutcome, subject_digest, HAS_CNS, get_cns_status
 
 
 def cns_canonicalize(step: CompositionStep) -> str:
     """Convert any outcome to CNS canonical form.
 
     Maps system outcomes to PASS/RETRY/TERMINAL_BREACH based on model type.
+    Uses authoritative CNS gate.py semantics when available.
     """
     outcome = step.output_outcome or "unknown"
     model = step.output_model
 
-    # Already canonical
+    # Already canonical (handle both string and enum forms)
     if model == "cns_gate_outcome":
-        if outcome in ("pass", "retry", "terminal_breach"):
-            return outcome
+        outcome_lower = str(outcome).lower()
+        if outcome_lower in ("pass", "retry", "terminal_breach"):
+            return outcome_lower
         return "terminal_breach"
 
     # SWIZZLE verdicts
