@@ -1,0 +1,292 @@
+{
+  "schema": 1,
+  "totals": {
+    "runs": 3
+  },
+  "runs": [
+    {
+      "run_id": "2026-09-17T19:53:54+00:00:3e623ec84caa",
+      "at": "2026-09-17T19:53:54+00:00",
+      "commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
+      "tool_version": "1.7.8",
+      "checks": {
+        "structural": "ran",
+        "mutate": "not_run",
+        "kernel": "not_run",
+        "boundary": "not_run",
+        "structure": "ran",
+        "branches": "ran",
+        "tests": "declined",
+        "project": "ran",
+        "secrets": "could_not_run",
+        "correlate": "ran",
+        "ledger": "ran"
+      },
+      "records": {
+        "baseline": "absent",
+        "casefile": "absent"
+      },
+      "link": "274217c619e3b247",
+      "counts": {
+        "found": 11,
+        "primary": 11,
+        "found_remembered": 11,
+        "scanned": 15
+      }
+    },
+    {
+      "run_id": "2026-09-17T19:54:16+00:00:3e623ec84caa",
+      "at": "2026-09-17T19:54:16+00:00",
+      "commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
+      "tool_version": "1.7.8",
+      "checks": {
+        "structural": "ran",
+        "mutate": "not_run",
+        "kernel": "not_run",
+        "boundary": "not_run",
+        "structure": "ran",
+        "branches": "ran",
+        "tests": "could_not_run",
+        "project": "ran",
+        "secrets": "ran",
+        "correlate": "ran",
+        "ledger": "ran"
+      },
+      "records": {
+        "baseline": "absent",
+        "casefile": "absent"
+      },
+      "link": "dd3394dad3ba075a",
+      "counts": {
+        "found": 11,
+        "primary": 11,
+        "found_remembered": 11,
+        "scanned": 15
+      }
+    },
+    {
+      "run_id": "2026-09-17T19:54:29+00:00:3e623ec84caa",
+      "at": "2026-09-17T19:54:29+00:00",
+      "commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
+      "tool_version": "1.7.8",
+      "checks": {
+        "structural": "ran",
+        "mutate": "not_run",
+        "kernel": "not_run",
+        "boundary": "not_run",
+        "structure": "ran",
+        "branches": "ran",
+        "tests": "ran",
+        "project": "ran",
+        "secrets": "ran",
+        "correlate": "ran",
+        "ledger": "ran"
+      },
+      "records": {
+        "baseline": "absent",
+        "casefile": "absent"
+      },
+      "link": "c1418b8e7eb108f6",
+      "counts": {
+        "found": 12,
+        "primary": 12,
+        "found_remembered": 12,
+        "scanned": 15
+      }
+    }
+  ],
+  "findings": {
+    "ghost-012542e299a9": {
+      "detector": "test_status",
+      "file": "tests/test_library_composition.py",
+      "summary": "failing test: tests/test_library_composition.py cannot be collected: module 'cns' is in this repository but not on the import path",
+      "renamed_from": "",
+      "severity": "major",
+      "first_seen": "2026-09-17T19:54:29+00:00",
+      "first_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
+      "last_seen": "2026-09-17T19:54:29+00:00",
+      "last_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
+      "runs_seen": 1,
+      "consecutive": 1,
+      "returns": 0,
+      "absent_last_run": false,
+      "dispositions": []
+    },
+    "ghost-146e1f82f3a5": {
+      "detector": "intra_function_duplicate_block",
+      "file": "src/cns/compose_library.py",
+      "summary": "'_canonicalize' repeats the same single statement 2 times (lines 268-268, 297-297): same shape, names/literals differ",
+      "renamed_from": "",
+      "severity": "minor",
+      "first_seen": "2026-09-17T19:53:54+00:00",
+      "first_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
+      "last_seen": "2026-09-17T19:54:29+00:00",
+      "last_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
+      "runs_seen": 3,
+      "consecutive": 3,
+      "returns": 0,
+      "absent_last_run": false,
+      "dispositions": []
+    },
+    "ghost-269c50c92c21": {
+      "detector": "intra_function_duplicate_block",
+      "file": "src/cns/compose_library.py",
+      "summary": "'_canonicalize' repeats the same single statement 2 times (lines 277-277, 288-288): same shape, names/literals differ",
+      "renamed_from": "",
+      "severity": "minor",
+      "first_seen": "2026-09-17T19:53:54+00:00",
+      "first_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
+      "last_seen": "2026-09-17T19:54:29+00:00",
+      "last_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
+      "runs_seen": 3,
+      "consecutive": 3,
+      "returns": 0,
+      "absent_last_run": false,
+      "dispositions": []
+    },
+    "ghost-3b8cf61d65fd": {
+      "detector": "no_ci_configuration",
+      "file": "user/composition-engine",
+      "summary": "tests nobody runs: 1 test file(s) exist and no CI configuration runs them",
+      "renamed_from": "",
+      "severity": "minor",
+      "first_seen": "2026-09-17T19:53:54+00:00",
+      "first_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
+      "last_seen": "2026-09-17T19:54:29+00:00",
+      "last_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
+      "runs_seen": 3,
+      "consecutive": 3,
+      "returns": 0,
+      "absent_last_run": false,
+      "dispositions": []
+    },
+    "ghost-4349b08063f2": {
+      "detector": "near_duplicate_function",
+      "file": "src/cns/compose_library.py",
+      "summary": "2 functions share identical AST structure (names/literals differ, control flow and shape don't): compose_library.py:141:find_composition_path, core.py:139:find_composition_path",
+      "renamed_from": "",
+      "severity": "minor",
+      "first_seen": "2026-09-17T19:53:54+00:00",
+      "first_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
+      "last_seen": "2026-09-17T19:54:29+00:00",
+      "last_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
+      "runs_seen": 3,
+      "consecutive": 3,
+      "returns": 0,
+      "absent_last_run": false,
+      "dispositions": []
+    },
+    "ghost-5865c3e53a96": {
+      "detector": "near_duplicate_function",
+      "file": "src/cns/adapters.py",
+      "summary": "2 functions share identical AST structure (names/literals differ, control flow and shape don't): adapters.py:158:invoke, adapters_cns.py:102:invoke",
+      "renamed_from": "",
+      "severity": "minor",
+      "first_seen": "2026-09-17T19:53:54+00:00",
+      "first_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
+      "last_seen": "2026-09-17T19:54:29+00:00",
+      "last_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
+      "runs_seen": 3,
+      "consecutive": 3,
+      "returns": 0,
+      "absent_last_run": false,
+      "dispositions": []
+    },
+    "ghost-797b42c9c0c5": {
+      "detector": "near_duplicate_function",
+      "file": "src/cns/compose_library.py",
+      "summary": "2 functions share identical AST structure (names/literals differ, control flow and shape don't): compose_library.py:40:invoke, core.py:27:invoke",
+      "renamed_from": "",
+      "severity": "minor",
+      "first_seen": "2026-09-17T19:53:54+00:00",
+      "first_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
+      "last_seen": "2026-09-17T19:54:29+00:00",
+      "last_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
+      "runs_seen": 3,
+      "consecutive": 3,
+      "returns": 0,
+      "absent_last_run": false,
+      "dispositions": []
+    },
+    "ghost-7d4b1bd8413b": {
+      "detector": "near_duplicate_function",
+      "file": "src/cns/adapters.py",
+      "summary": "3 functions share identical AST structure (names/literals differ, control flow and shape don't): adapters.py:28:invoke, adapters.py:72:invoke, adapters.py:113:invoke",
+      "renamed_from": "",
+      "severity": "major",
+      "first_seen": "2026-09-17T19:53:54+00:00",
+      "first_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
+      "last_seen": "2026-09-17T19:54:29+00:00",
+      "last_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
+      "runs_seen": 3,
+      "consecutive": 3,
+      "returns": 0,
+      "absent_last_run": false,
+      "dispositions": []
+    },
+    "ghost-9f9e341783b7": {
+      "detector": "intra_function_duplicate_block",
+      "file": "src/cns/cns_backend.py",
+      "summary": "'cns_canonicalize' repeats the same single statement 2 times (lines 37-37, 55-55): same shape, names/literals differ",
+      "renamed_from": "",
+      "severity": "minor",
+      "first_seen": "2026-09-17T19:53:54+00:00",
+      "first_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
+      "last_seen": "2026-09-17T19:54:29+00:00",
+      "last_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
+      "runs_seen": 3,
+      "consecutive": 3,
+      "returns": 0,
+      "absent_last_run": false,
+      "dispositions": []
+    },
+    "ghost-af7fefe9e75c": {
+      "detector": "near_duplicate_function",
+      "file": "src/cns/compose_library.py",
+      "summary": "2 functions share identical AST structure (names/literals differ, control flow and shape don't): compose_library.py:239:_translate, core.py:243:_translate",
+      "renamed_from": "",
+      "severity": "minor",
+      "first_seen": "2026-09-17T19:53:54+00:00",
+      "first_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
+      "last_seen": "2026-09-17T19:54:29+00:00",
+      "last_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
+      "runs_seen": 3,
+      "consecutive": 3,
+      "returns": 0,
+      "absent_last_run": false,
+      "dispositions": []
+    },
+    "ghost-c83476e80929": {
+      "detector": "intra_function_duplicate_block",
+      "file": "src/cns/cns_integration.py",
+      "summary": "'cns_resolve' repeats the same single statement 2 times (lines 56-56, 61-61): same shape, names/literals differ",
+      "renamed_from": "",
+      "severity": "minor",
+      "first_seen": "2026-09-17T19:53:54+00:00",
+      "first_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
+      "last_seen": "2026-09-17T19:54:29+00:00",
+      "last_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
+      "runs_seen": 3,
+      "consecutive": 3,
+      "returns": 0,
+      "absent_last_run": false,
+      "dispositions": []
+    },
+    "ghost-d203265c16fe": {
+      "detector": "name_disagreement",
+      "file": "src/cns/compose_library.py",
+      "summary": "`outcome` and `incoming` are one value under two names, across 1 file(s)",
+      "renamed_from": "",
+      "severity": "minor",
+      "first_seen": "2026-09-17T19:53:54+00:00",
+      "first_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
+      "last_seen": "2026-09-17T19:54:29+00:00",
+      "last_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
+      "runs_seen": 3,
+      "consecutive": 3,
+      "returns": 0,
+      "absent_last_run": false,
+      "dispositions": []
+    }
+  }
+}
