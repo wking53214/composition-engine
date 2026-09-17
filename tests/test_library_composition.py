@@ -225,15 +225,25 @@ class TestTranslationRules:
         assert rule("unsummoned") == "branched"
 
     def test_status_to_decision_translation(self, composer):
-        """ghost_tools status translates to Innovation OS decision."""
+        """ghost_tools status translates to Innovation OS decision.
+
+        CONFIRMED/REJECTED were swapped from what this test asserted before:
+        CONFIRMED is a deterministic, proven finding and now rejects, while
+        REJECTED (reviewed, not real) and SUPPRESSED (real, but accepted)
+        both approve. See outcomes.py's CANONICAL_TABLE comment for the full
+        account; this is the one other place the same polarity was written
+        down, so it moved too.
+        """
         rule = composer.translation_rules.get(
             (SystemModel.GHOST_TOOLS_STATUS, SystemModel.INNOVATION_OS_DECISION)
         )
         assert rule is not None
 
-        assert rule("confirmed") == "approved"
+        assert rule("confirmed") == "rejected"
+        assert rule("confirmed_by_review") == "rejected"
         assert rule("reasoned") == "branched"
-        assert rule("rejected") == "rejected"
+        assert rule("rejected") == "approved"
+        assert rule("suppressed") == "approved"
 
     def test_decision_to_gate_translation(self, composer):
         """Innovation OS decision translates to CNS gate outcome."""

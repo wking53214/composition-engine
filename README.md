@@ -182,12 +182,21 @@ composer.register_translation("verdict", "decision", translate_verdict_to_decisi
 
 | Path | Purpose |
 |------|---------|
-| `src/composition_engine/core.py` | Universal orchestrator (system-agnostic) |
-| `src/composition_engine/cns_backend.py` | CNS outcomes, subject binding, convergence |
-| `src/composition_engine/adapters_cns.py` | SWIZZLE, ghost_tools, WIZZLE, Innovation OS |
-| `tests/test_library_composition.py` | 21 comprehensive tests |
+| `src/composition_engine/core.py` | Universal orchestrator (system-agnostic), used both bare and as the base LibraryComposer configures |
+| `src/composition_engine/outcomes.py` | The outcome vocabularies and `CANONICAL_TABLE` -- the one place either composer track reads what a word means |
+| `src/composition_engine/compose_library.py` | `LibraryComposer`: `UniversalComposer` pre-configured with `CANONICAL_TABLE` and a vocabulary check |
+| `src/composition_engine/cns_backend.py` | `create_cns_composer()`: `UniversalComposer` pre-configured the plain-string way, same table |
+| `src/composition_engine/adapters.py` | SWIZZLE, ghost_tools, WIZZLE, Innovation OS adapters (`adapters_cns.py` re-exports these under their older names) |
+| `tests/test_library_composition.py`, `tests/test_outcomes.py` | the test suite -- `pytest -q` for the count |
 | `docs/LIBRARY_COMPOSITION_GUIDE.md` | Complete guide (universality, scaling) |
 | `docs/CREATING_CUSTOM_ADAPTERS.md` | How to create adapters for any system |
+
+`WizzleAdapter` does a real git-history check via `ghost_buster.forensics`
+when ghost_tools is installed alongside this repo (`pip install -e
+/path/to/ghost_tools`, not a listed dependency -- same optional-import shape
+as the CNS backend) and an honest `UNKNOWN` otherwise. CI never has
+ghost_tools checked out, so it always exercises the fallback path; the real
+path is covered separately, skipped automatically when unavailable.
 
 ## Usage Patterns
 

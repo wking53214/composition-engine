@@ -166,24 +166,46 @@ CNS Gate (PASS/RETRY/TERMINAL_BREACH)
 
 Each link has translation rules defined to convert outcomes while preserving semantic meaning.
 
-### Verdict → Status
+SWIZZLE and ghost_tools don't chain by translating one's verdict into the
+other's status: ghost_tools runs its own scan independent of what SWIZZLE
+reported (a real scan doesn't consult SWIZZLE's verdict to decide its own
+findings), so there's no Verdict → Status rule to speak of. WIZZLE, in turn,
+doesn't read ghost_tools' status to decide *its* answer either -- it checks
+a different question against real git history (see `outcomes.py`'s
+`WizzleForensics` docstring). The rules below are the outcome-model
+translations that do exist, all feeding toward Innovation OS.
 
-When SWIZZLE's verdict feeds into ghost_tools:
-- `BANISHED` → subject for manual review (input to scan)
-- `ESCAPED` → ghost_tools confirms finding exists
+### Status → Decision
 
-### Status → Forensics
+When ghost_tools' status feeds into Innovation OS:
+- `CONFIRMED` / `CONFIRMED_BY_REVIEW` → `REJECTED` (a deterministic or
+  human-verified finding is a real, established problem)
+- `REJECTED` / `SUPPRESSED` → `APPROVED` (reviewed and dismissed, or a known
+  issue already accepted -- neither is a live reason to block)
+- `REASONED` → `BRANCHED` (an unverified claim; not yet decided)
 
-When ghost_tools findings feed into WIZZLE:
-- `CONFIRMED` → verified finding; check if it's intentional removal
-- `REASONED` → needs human review
+This reads backwards at first glance -- CONFIRMED sounds like it should
+approve. It doesn't: CONFIRMED is ghost_tools' strongest possible evidence
+that something is actually wrong (its own schema.py calls CONFIRMED and
+CONFIRMED_BY_REVIEW the AUTHORITATIVE statuses, "the ones a deterministic
+decision may rest on"), and a governance gate that let its most-proven
+findings straight through while breaching on a status meaning "reviewed and
+not real" would be gating on the wrong end of the evidence.
 
 ### Forensics → Decision
 
 When WIZZLE's classification feeds into Innovation OS:
-- `REMOVED_FROM_LIBRARY` (intentional) → `REJECTED`
-- `RELOCATED_TO_TESTS` (safe) → `APPROVED`
-- `REGRESSION` → `REJECTED`
+- `NEVER_PRODUCED` → `APPROVED` (an oversight, or a vocabulary written ahead
+  of its behaviour -- not a regression; ghost_buster's own severity
+  calibration rates this MINOR)
+- `REMOVED_FROM_LIBRARY` → `REJECTED` (library code produced it once; a
+  commit removed that production and left the declaration standing)
+- `RELOCATED_TO_TESTS` → `REJECTED` (the sharpest case: production moved
+  from library code into a test in the same commit, so the state became no
+  more reachable while the evidence of that got quieter -- ghost_buster
+  rates this equally MAJOR alongside REMOVED_FROM_LIBRARY, not safer)
+- `UNKNOWN` → `BRANCHED` (history couldn't be read; fails closed rather
+  than passing on an absence of evidence)
 
 ### Decision → Gate Outcome
 

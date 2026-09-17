@@ -14,62 +14,39 @@ from typing import Any, Dict, List
 
 from .core import CompositionStep, UniversalComposer
 from .cns_integration import GateOutcome, subject_digest, HAS_CNS, get_cns_status
+from .outcomes import CANONICAL_TABLE
 
 
 def cns_canonicalize(step: CompositionStep) -> str:
     """Convert any outcome to CNS canonical form.
 
-    Maps system outcomes to PASS/RETRY/TERMINAL_BREACH based on model type.
-    Uses authoritative CNS gate.py semantics when available.
+    Maps system outcomes to PASS/RETRY/TERMINAL_BREACH based on model type,
+    via the same CANONICAL_TABLE compose_library.py's LibraryComposer uses --
+    not a second hand-written cascade. The two used to be independent copies
+    of the same five branches; this one drifted a full row short (no
+    ghost_tools_severity branch at all, so anything in that model silently
+    fell through to terminal_breach) and nothing caught it, because nothing
+    here had test coverage and nothing tied the two copies together. Sharing
+    one table is what makes that class of drift structurally impossible
+    rather than merely unlikely.
+
+    CANONICAL_TABLE is keyed by SystemModel enum members and by the *Verdict
+    /*Status/*Decision enum members within each model's row, but every one
+    of those is a str Enum, and a str Enum hashes and compares equal to its
+    plain string value -- so this function's plain-string model and outcome
+    (this composer track never imports SystemModel or the vocabulary enums)
+    look themselves up in the same dict compose_library.py's SystemModel-
+    typed calls do, with no conversion at either end. Returns a plain
+    string, matching every existing caller (cns_converge compares the
+    result against "retry" as a string): GateOutcome.value, never the bare
+    enum member -- str() on a str-Enum member prints "GateOutcome.PASS",
+    not "pass".
     """
     outcome = step.output_outcome or "unknown"
     model = step.output_model
 
-    # Already canonical (handle both string and enum forms)
-    if model == "cns_gate_outcome":
-        outcome_lower = str(outcome).lower()
-        if outcome_lower in ("pass", "retry", "terminal_breach"):
-            return outcome_lower
-        return "terminal_breach"
-
-    # SWIZZLE verdicts
-    if model == "swizzle_verdict":
-        if outcome in ("banished", "dismissed"):
-            return "pass"
-        elif outcome in ("escaped", "conjured"):
-            return "terminal_breach"
-        else:
-            return "retry"
-
-    # ghost_tools status
-    if model == "ghost_tools_status":
-        if outcome == "confirmed":
-            return "pass"
-        elif outcome in ("reasoned", "rejected"):
-            return "terminal_breach"
-        else:
-            return "retry"
-
-    # WIZZLE forensics
-    if model == "wizzle_forensics":
-        if outcome in ("relocated_to_tests", "intentional_removal"):
-            return "pass"
-        elif outcome in ("removed_from_library", "regression"):
-            return "terminal_breach"
-        else:
-            return "retry"
-
-    # Innovation OS decisions
-    if model == "innovation_os_decision":
-        if outcome == "approved":
-            return "pass"
-        elif outcome == "rejected":
-            return "terminal_breach"
-        else:
-            return "retry"
-
-    # Fallback
-    return "terminal_breach"
+    mapping, default = CANONICAL_TABLE.get(model, ({}, GateOutcome.TERMINAL_BREACH))
+    return mapping.get(outcome, default).value
 
 
 def cns_converge(steps: List[CompositionStep]) -> bool:

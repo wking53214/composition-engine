@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "totals": {
-    "runs": 11
+    "runs": 12
   },
   "runs": [
     {
@@ -333,6 +333,36 @@
         "found_remembered": 14,
         "scanned": 17
       }
+    },
+    {
+      "run_id": "2026-09-17T21:09:53+00:00:47dfe79d21bf",
+      "at": "2026-09-17T21:09:53+00:00",
+      "commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
+      "tool_version": "1.7.8",
+      "checks": {
+        "structural": "ran",
+        "mutate": "ran",
+        "kernel": "not_run",
+        "boundary": "not_run",
+        "structure": "ran",
+        "branches": "ran",
+        "tests": "ran",
+        "project": "ran",
+        "secrets": "ran",
+        "correlate": "ran",
+        "ledger": "ran"
+      },
+      "records": {
+        "baseline": "absent",
+        "casefile": "absent"
+      },
+      "link": "a05a7fe1c592168b",
+      "counts": {
+        "found": 16,
+        "primary": 16,
+        "found_remembered": 16,
+        "scanned": 17
+      }
     }
   ],
   "findings": {
@@ -395,9 +425,9 @@
       "last_seen": "2026-09-17T20:15:01+00:00",
       "last_commit": "be0884b36e6be40b6c5f291f74761c9e5747feac",
       "runs_seen": 2,
-      "consecutive": 2,
+      "consecutive": 0,
       "returns": 0,
-      "absent_last_run": false,
+      "absent_last_run": true,
       "dispositions": []
     },
     "ghost-1b676e5a20b5": {
@@ -411,9 +441,9 @@
       "last_seen": "2026-09-17T20:15:01+00:00",
       "last_commit": "be0884b36e6be40b6c5f291f74761c9e5747feac",
       "runs_seen": 1,
-      "consecutive": 1,
+      "consecutive": 0,
       "returns": 0,
-      "absent_last_run": false,
+      "absent_last_run": true,
       "dispositions": []
     },
     "ghost-250e531e01f6": {
@@ -427,9 +457,9 @@
       "last_seen": "2026-09-17T20:15:01+00:00",
       "last_commit": "be0884b36e6be40b6c5f291f74761c9e5747feac",
       "runs_seen": 2,
-      "consecutive": 2,
+      "consecutive": 0,
       "returns": 0,
-      "absent_last_run": false,
+      "absent_last_run": true,
       "dispositions": []
     },
     "ghost-262d122b2668": {
@@ -507,9 +537,9 @@
       "last_seen": "2026-09-17T20:15:01+00:00",
       "last_commit": "be0884b36e6be40b6c5f291f74761c9e5747feac",
       "runs_seen": 2,
-      "consecutive": 2,
+      "consecutive": 0,
       "returns": 0,
-      "absent_last_run": false,
+      "absent_last_run": true,
       "dispositions": []
     },
     "ghost-3a1647693f9a": {
@@ -523,9 +553,9 @@
       "last_seen": "2026-09-17T20:15:01+00:00",
       "last_commit": "be0884b36e6be40b6c5f291f74761c9e5747feac",
       "runs_seen": 2,
-      "consecutive": 2,
+      "consecutive": 0,
       "returns": 0,
-      "absent_last_run": false,
+      "absent_last_run": true,
       "dispositions": []
     },
     "ghost-3b8cf61d65fd": {
@@ -600,10 +630,26 @@
       "severity": "major",
       "first_seen": "2026-09-17T20:00:43+00:00",
       "first_commit": "ac7bdf79e179b1fac11e67eff9a64ffd1de5545a",
-      "last_seen": "2026-09-17T20:15:01+00:00",
-      "last_commit": "be0884b36e6be40b6c5f291f74761c9e5747feac",
-      "runs_seen": 8,
-      "consecutive": 8,
+      "last_seen": "2026-09-17T21:09:53+00:00",
+      "last_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
+      "runs_seen": 9,
+      "consecutive": 9,
+      "returns": 0,
+      "absent_last_run": false,
+      "dispositions": []
+    },
+    "ghost-46733d5755c9": {
+      "detector": "intra_function_duplicate_block",
+      "file": "src/composition_engine/cns_integration.py",
+      "summary": "'cns_resolve' repeats the same single statement 2 times (lines 56-56, 61-61): same shape, names/literals differ",
+      "renamed_from": "src/cns/cns_integration.py",
+      "severity": "minor",
+      "first_seen": "2026-09-17T19:53:54+00:00",
+      "first_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
+      "last_seen": "2026-09-17T21:09:53+00:00",
+      "last_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
+      "runs_seen": 12,
+      "consecutive": 12,
       "returns": 0,
       "absent_last_run": false,
       "dispositions": []
@@ -640,6 +686,22 @@
       "absent_last_run": true,
       "dispositions": []
     },
+    "ghost-5de5c50b19af": {
+      "detector": "unreachable_declared_state",
+      "file": "src/composition_engine/outcomes.py",
+      "summary": "'WizzleForensics.REMOVED_FROM_LIBRARY' is produced only by reading stored data, and nothing says so",
+      "renamed_from": "",
+      "severity": "minor",
+      "first_seen": "2026-09-17T21:09:53+00:00",
+      "first_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
+      "last_seen": "2026-09-17T21:09:53+00:00",
+      "last_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
+      "runs_seen": 1,
+      "consecutive": 1,
+      "returns": 0,
+      "absent_last_run": false,
+      "dispositions": []
+    },
     "ghost-64b1334857cb": {
       "detector": "intra_function_duplicate_block",
       "file": "src/cns/compose_library.py",
@@ -667,9 +729,9 @@
       "last_seen": "2026-09-17T20:15:01+00:00",
       "last_commit": "be0884b36e6be40b6c5f291f74761c9e5747feac",
       "runs_seen": 1,
-      "consecutive": 1,
+      "consecutive": 0,
       "returns": 0,
-      "absent_last_run": false,
+      "absent_last_run": true,
       "dispositions": []
     },
     "ghost-675a36dbbf7b": {
@@ -686,6 +748,22 @@
       "consecutive": 0,
       "returns": 0,
       "absent_last_run": true,
+      "dispositions": []
+    },
+    "ghost-6b93a029c46e": {
+      "detector": "unreachable_declared_state",
+      "file": "src/composition_engine/outcomes.py",
+      "summary": "'WizzleForensics.RELOCATED_TO_TESTS' is produced only by reading stored data, and nothing says so",
+      "renamed_from": "",
+      "severity": "minor",
+      "first_seen": "2026-09-17T21:09:53+00:00",
+      "first_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
+      "last_seen": "2026-09-17T21:09:53+00:00",
+      "last_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
+      "runs_seen": 1,
+      "consecutive": 1,
+      "returns": 0,
+      "absent_last_run": false,
       "dispositions": []
     },
     "ghost-6ca86d325d55": {
@@ -752,6 +830,22 @@
       "absent_last_run": true,
       "dispositions": []
     },
+    "ghost-8b10235ebbfc": {
+      "detector": "unreachable_declared_state",
+      "file": "src/composition_engine/outcomes.py",
+      "summary": "'SwizzleVerdict.CONJURED' is declared and no code ever puts anything into it, though 2 other member(s) of SwizzleVerdict are produced",
+      "renamed_from": "",
+      "severity": "major",
+      "first_seen": "2026-09-17T21:09:53+00:00",
+      "first_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
+      "last_seen": "2026-09-17T21:09:53+00:00",
+      "last_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
+      "runs_seen": 1,
+      "consecutive": 1,
+      "returns": 0,
+      "absent_last_run": false,
+      "dispositions": []
+    },
     "ghost-90d08a31fa9f": {
       "detector": "near_duplicate_function",
       "file": "src/cns/compose_library.py",
@@ -768,6 +862,22 @@
       "absent_last_run": true,
       "dispositions": []
     },
+    "ghost-93bf6113512b": {
+      "detector": "unmerged_branch",
+      "file": ".git/refs/remotes/origin/claude/ghost-tools-composite-engine-ugi8yp",
+      "summary": "branch 'origin/claude/ghost-tools-composite-engine-ugi8yp' has commits not reflected in 'origin/main'",
+      "renamed_from": "",
+      "severity": "major",
+      "first_seen": "2026-09-17T21:09:53+00:00",
+      "first_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
+      "last_seen": "2026-09-17T21:09:53+00:00",
+      "last_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
+      "runs_seen": 1,
+      "consecutive": 1,
+      "returns": 0,
+      "absent_last_run": false,
+      "dispositions": []
+    },
     "ghost-9b547c08b1ef": {
       "detector": "near_duplicate_function",
       "file": "src/cns/compose_library.py",
@@ -779,9 +889,9 @@
       "last_seen": "2026-09-17T20:15:01+00:00",
       "last_commit": "be0884b36e6be40b6c5f291f74761c9e5747feac",
       "runs_seen": 1,
-      "consecutive": 1,
+      "consecutive": 0,
       "returns": 0,
-      "absent_last_run": false,
+      "absent_last_run": true,
       "dispositions": []
     },
     "ghost-9f9e341783b7": {
@@ -795,7 +905,23 @@
       "last_seen": "2026-09-17T20:15:01+00:00",
       "last_commit": "be0884b36e6be40b6c5f291f74761c9e5747feac",
       "runs_seen": 11,
-      "consecutive": 11,
+      "consecutive": 0,
+      "returns": 0,
+      "absent_last_run": true,
+      "dispositions": []
+    },
+    "ghost-9fcbdc009b06": {
+      "detector": "unreachable_declared_state",
+      "file": "src/composition_engine/outcomes.py",
+      "summary": "'GhostToolsStatus.SUPPRESSED' is declared and no code ever puts anything into it, though 2 other member(s) of GhostToolsStatus are produced",
+      "renamed_from": "",
+      "severity": "minor",
+      "first_seen": "2026-09-17T21:09:53+00:00",
+      "first_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
+      "last_seen": "2026-09-17T21:09:53+00:00",
+      "last_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
+      "runs_seen": 1,
+      "consecutive": 1,
       "returns": 0,
       "absent_last_run": false,
       "dispositions": []
@@ -811,9 +937,9 @@
       "last_seen": "2026-09-17T20:15:01+00:00",
       "last_commit": "be0884b36e6be40b6c5f291f74761c9e5747feac",
       "runs_seen": 2,
-      "consecutive": 2,
+      "consecutive": 0,
       "returns": 0,
-      "absent_last_run": false,
+      "absent_last_run": true,
       "dispositions": []
     },
     "ghost-af7fefe9e75c": {
@@ -832,18 +958,34 @@
       "absent_last_run": true,
       "dispositions": []
     },
-    "ghost-c83476e80929": {
-      "detector": "intra_function_duplicate_block",
-      "file": "src/cns/cns_integration.py",
-      "summary": "'cns_resolve' repeats the same single statement 2 times (lines 56-56, 61-61): same shape, names/literals differ",
+    "ghost-bed161b4452d": {
+      "detector": "unreachable_declared_state",
+      "file": "src/composition_engine/outcomes.py",
+      "summary": "'SwizzleVerdict.DISMISSED' is declared and no code ever puts anything into it, though 2 other member(s) of SwizzleVerdict are produced",
+      "renamed_from": "",
+      "severity": "major",
+      "first_seen": "2026-09-17T21:09:53+00:00",
+      "first_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
+      "last_seen": "2026-09-17T21:09:53+00:00",
+      "last_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
+      "runs_seen": 1,
+      "consecutive": 1,
+      "returns": 0,
+      "absent_last_run": false,
+      "dispositions": []
+    },
+    "ghost-c2a792ee014a": {
+      "detector": "unreachable_declared_state",
+      "file": "src/composition_engine/outcomes.py",
+      "summary": "'SwizzleVerdict.MISNAMED' is declared and no code ever puts anything into it, though 2 other member(s) of SwizzleVerdict are produced",
       "renamed_from": "",
       "severity": "minor",
-      "first_seen": "2026-09-17T19:53:54+00:00",
-      "first_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
-      "last_seen": "2026-09-17T20:15:01+00:00",
-      "last_commit": "be0884b36e6be40b6c5f291f74761c9e5747feac",
-      "runs_seen": 11,
-      "consecutive": 11,
+      "first_seen": "2026-09-17T21:09:53+00:00",
+      "first_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
+      "last_seen": "2026-09-17T21:09:53+00:00",
+      "last_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
+      "runs_seen": 1,
+      "consecutive": 1,
       "returns": 0,
       "absent_last_run": false,
       "dispositions": []
@@ -859,7 +1001,23 @@
       "last_seen": "2026-09-17T20:15:01+00:00",
       "last_commit": "be0884b36e6be40b6c5f291f74761c9e5747feac",
       "runs_seen": 6,
-      "consecutive": 6,
+      "consecutive": 0,
+      "returns": 0,
+      "absent_last_run": true,
+      "dispositions": []
+    },
+    "ghost-d0b049df39fe": {
+      "detector": "unreachable_declared_state",
+      "file": "src/composition_engine/outcomes.py",
+      "summary": "'GhostToolsStatus.CONFIRMED' is declared and no code ever puts anything into it, though 2 other member(s) of GhostToolsStatus are produced",
+      "renamed_from": "",
+      "severity": "major",
+      "first_seen": "2026-09-17T21:09:53+00:00",
+      "first_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
+      "last_seen": "2026-09-17T21:09:53+00:00",
+      "last_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
+      "runs_seen": 1,
+      "consecutive": 1,
       "returns": 0,
       "absent_last_run": false,
       "dispositions": []
@@ -880,6 +1038,22 @@
       "absent_last_run": true,
       "dispositions": []
     },
+    "ghost-de779cdd91e0": {
+      "detector": "unreachable_declared_state",
+      "file": "src/composition_engine/outcomes.py",
+      "summary": "'SwizzleVerdict.UNSUMMONED' is declared and no code ever puts anything into it, though 2 other member(s) of SwizzleVerdict are produced",
+      "renamed_from": "",
+      "severity": "minor",
+      "first_seen": "2026-09-17T21:09:53+00:00",
+      "first_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
+      "last_seen": "2026-09-17T21:09:53+00:00",
+      "last_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
+      "runs_seen": 1,
+      "consecutive": 1,
+      "returns": 0,
+      "absent_last_run": false,
+      "dispositions": []
+    },
     "ghost-e1d3c0d2b8a6": {
       "detector": "unreachable_declared_state",
       "file": "src/cns/outcomes.py",
@@ -894,6 +1068,22 @@
       "consecutive": 0,
       "returns": 0,
       "absent_last_run": true,
+      "dispositions": []
+    },
+    "ghost-edbaac2aa202": {
+      "detector": "near_duplicate_function",
+      "file": "tests/test_library_composition.py",
+      "summary": "2 functions share identical AST structure (names/literals differ, control flow and shape don't): test_library_composition.py:213:test_verdict_to_decision_translation, test_library_composition.py:227:test_status_to_decision_translation",
+      "renamed_from": "",
+      "severity": "informational",
+      "first_seen": "2026-09-17T21:09:53+00:00",
+      "first_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
+      "last_seen": "2026-09-17T21:09:53+00:00",
+      "last_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
+      "runs_seen": 1,
+      "consecutive": 1,
+      "returns": 0,
+      "absent_last_run": false,
       "dispositions": []
     },
     "ghost-ee1678f8cea3": {
@@ -923,9 +1113,9 @@
       "last_seen": "2026-09-17T20:15:01+00:00",
       "last_commit": "be0884b36e6be40b6c5f291f74761c9e5747feac",
       "runs_seen": 1,
-      "consecutive": 1,
+      "consecutive": 0,
       "returns": 0,
-      "absent_last_run": false,
+      "absent_last_run": true,
       "dispositions": []
     },
     "ghost-f6b1c86f7cab": {
@@ -939,7 +1129,71 @@
       "last_seen": "2026-09-17T20:15:01+00:00",
       "last_commit": "be0884b36e6be40b6c5f291f74761c9e5747feac",
       "runs_seen": 2,
-      "consecutive": 2,
+      "consecutive": 0,
+      "returns": 0,
+      "absent_last_run": true,
+      "dispositions": []
+    },
+    "ghost-f71811afd7a8": {
+      "detector": "structure",
+      "file": "pyproject.toml",
+      "summary": "undeclared dependency: 'ghost-buster' (distribution 'ghost-tools') is imported by 2 module(s) and appears in no dependency declaration",
+      "renamed_from": "",
+      "severity": "major",
+      "first_seen": "2026-09-17T21:09:53+00:00",
+      "first_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
+      "last_seen": "2026-09-17T21:09:53+00:00",
+      "last_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
+      "runs_seen": 1,
+      "consecutive": 1,
+      "returns": 0,
+      "absent_last_run": false,
+      "dispositions": []
+    },
+    "ghost-f7283fb2356a": {
+      "detector": "unreachable_declared_state",
+      "file": "src/composition_engine/outcomes.py",
+      "summary": "'WizzleForensics.NEVER_PRODUCED' is produced only by reading stored data, and nothing says so",
+      "renamed_from": "",
+      "severity": "minor",
+      "first_seen": "2026-09-17T21:09:53+00:00",
+      "first_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
+      "last_seen": "2026-09-17T21:09:53+00:00",
+      "last_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
+      "runs_seen": 1,
+      "consecutive": 1,
+      "returns": 0,
+      "absent_last_run": false,
+      "dispositions": []
+    },
+    "ghost-f80542295984": {
+      "detector": "unreachable_declared_state",
+      "file": "src/composition_engine/outcomes.py",
+      "summary": "'GhostToolsStatus.CONFIRMED_BY_REVIEW' is declared and no code ever puts anything into it, though 2 other member(s) of GhostToolsStatus are produced",
+      "renamed_from": "",
+      "severity": "minor",
+      "first_seen": "2026-09-17T21:09:53+00:00",
+      "first_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
+      "last_seen": "2026-09-17T21:09:53+00:00",
+      "last_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
+      "runs_seen": 1,
+      "consecutive": 1,
+      "returns": 0,
+      "absent_last_run": false,
+      "dispositions": []
+    },
+    "ghost-fa416ade0589": {
+      "detector": "unreachable_declared_state",
+      "file": "src/composition_engine/outcomes.py",
+      "summary": "'InnovationOSDecision.EVALUATED' is declared and no code ever puts anything into it, though 4 other member(s) of InnovationOSDecision are produced",
+      "renamed_from": "",
+      "severity": "minor",
+      "first_seen": "2026-09-17T21:09:53+00:00",
+      "first_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
+      "last_seen": "2026-09-17T21:09:53+00:00",
+      "last_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
+      "runs_seen": 1,
+      "consecutive": 1,
       "returns": 0,
       "absent_last_run": false,
       "dispositions": []

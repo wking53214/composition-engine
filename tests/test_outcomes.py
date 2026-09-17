@@ -218,3 +218,145 @@ class TestCanonicalTable:
 
         for word in vocabulary_for(model):
             assert isinstance(self._canon(word, model), GateOutcome)
+
+
+class TestGhostToolsAdapterThroughRealPipeline:
+    """The GHOST_TOOLS_STATUS gate polarity fix, proven through compose(),
+    not by calling _canonicalize() with hand-picked literals.
+
+    Every other test of CANONICAL_TABLE constructs a CompositionStep or calls
+    _canonicalize directly -- correct for unit-testing the table in
+    isolation, but it means the fix was never run through anything shaped
+    like a real adapter: GhostToolsAdapter.invoke() could aggregate its
+    findings backwards, or the vocabulary check could silently swallow a
+    real value, and nothing here would have noticed. These tests register
+    the actual adapter, call the actual compose(), and read the actual
+    GateOutcome that comes out the other end -- the same path a real
+    GhostToolsAdapter inherits unchanged.
+    """
+
+    @staticmethod
+    def _run(findings):
+        from composition_engine.adapters import GhostToolsAdapter
+
+        composer = LibraryComposer()
+        composer.register_adapter(GhostToolsAdapter())
+        subject = {"repo": "some/repo"}
+        if findings is not None:
+            subject["findings"] = findings
+        return composer.compose(["ghost_tools"], subject, cycle=1)
+
+    def test_a_confirmed_critical_finding_breaches(self):
+        trace = self._run([{"status": "confirmed", "severity": "critical"}])
+        assert trace.steps[0].output_outcome is GhostToolsStatus.CONFIRMED
+        assert trace.overall_outcome.value == "terminal_breach"
+
+    def test_a_confirmed_by_review_finding_also_breaches(self):
+        # Human-verified, not merely detector-proven -- still AUTHORITATIVE,
+        # still breaches. Distinct code path from CONFIRMED in the adapter's
+        # aggregation order; worth its own case.
+        trace = self._run([{"status": "confirmed_by_review"}])
+        assert trace.overall_outcome.value == "terminal_breach"
+
+    def test_only_reasoned_findings_retries_not_breaches(self):
+        # An unverified model claim. The pre-fix table breached on this;
+        # the whole point of the fix is that an unproven claim doesn't get
+        # the same treatment as a proven one.
+        trace = self._run([{"status": "reasoned"}])
+        assert trace.steps[0].output_outcome is GhostToolsStatus.REASONED
+        assert trace.overall_outcome.value == "retry"
+
+    def test_a_reviewed_and_dismissed_finding_passes(self):
+        trace = self._run([{"status": "rejected"}])
+        assert trace.overall_outcome.value == "pass"
+
+    def test_a_suppressed_known_issue_passes(self):
+        # Real, but accepted and waived -- not a live reason to block, even
+        # though it was once confirmed.
+        trace = self._run([{"status": "suppressed"}])
+        assert trace.overall_outcome.value == "pass"
+
+    def test_worst_finding_wins_when_several_are_present(self):
+        # A REASONED hunch and a REJECTED dismissal alongside a real,
+        # CONFIRMED defect -- the adapter has to report the most concerning
+        # one, not the first, the last, or an average.
+        trace = self._run(
+            [
+                {"status": "reasoned"},
+                {"status": "rejected"},
+                {"status": "confirmed"},
+            ]
+        )
+        assert trace.steps[0].output_outcome is GhostToolsStatus.CONFIRMED
+        assert trace.overall_outcome.value == "terminal_breach"
+
+    def test_no_findings_supplied_is_a_cautious_retry_not_a_clean_pass(self):
+        # No subject["findings"] at all -- the shape this repo's own demos
+        # and the four-system tests below use. REASONED is the honest
+        # report for a subject nobody scanned; the gate reads that as
+        # unproven, not as clean.
+        trace = self._run(None)
+        assert trace.steps[0].output_outcome is GhostToolsStatus.REASONED
+        assert trace.overall_outcome.value == "retry"
+
+    def test_the_vocabulary_check_runs_for_real_too(self):
+        # Every value GhostToolsAdapter can actually produce is declared --
+        # proven by running it, not by asserting the vocabulary matches
+        # itself.
+        trace = self._run([{"status": "confirmed"}])
+        assert trace.steps[0].metadata["outcome_declared"] is True
+        assert "[!]" not in trace.timeline()
+
+
+class TestWizzleAdapterRealAndFallbackPaths:
+    """WizzleAdapter now does one of two things: a real git-history check
+    via ghost_buster.forensics when it's importable, or an honest UNKNOWN
+    when it isn't or when `subject` doesn't say what to check. Both paths
+    run through compose(), not through WizzleForensics values picked by
+    hand.
+    """
+
+    @staticmethod
+    def _run(subject):
+        from composition_engine.adapters import WizzleAdapter
+
+        composer = LibraryComposer()
+        composer.register_adapter(WizzleAdapter())
+        return composer.compose(["wizzle"], subject, cycle=1)
+
+    def test_missing_subject_fields_are_unknown_not_a_guess(self):
+        trace = self._run({"repo": "x"})
+        assert trace.steps[0].output_outcome is WizzleForensics.UNKNOWN
+        assert trace.overall_outcome.value == "retry"
+
+    def test_ghost_tools_not_importable_is_unknown(self, monkeypatch):
+        import composition_engine.adapters as adapters_mod
+
+        monkeypatch.setattr(adapters_mod, "HAS_GHOST_TOOLS_FORENSICS", False)
+        trace = self._run(
+            {"repo_path": "/home/user/ghost_tools", "enum": "Status", "member": "CONFIRMED_BY_REVIEW"}
+        )
+        assert trace.steps[0].output_outcome is WizzleForensics.UNKNOWN
+
+    @pytest.mark.skipif(
+        __import__("importlib").util.find_spec("ghost_buster") is None,
+        reason="ghost_tools not installed alongside this checkout",
+    )
+    def test_real_check_against_ghost_tools_confirmed_by_review(self):
+        # CONFIRMED_BY_REVIEW is documented in ghost_tools' own schema.py as
+        # "Read, never written here" -- declared, deliberately never
+        # produced. A real provenance() walk over ghost_tools' own repo
+        # should find no commit ever assigned it, i.e. NEVER_PRODUCED, and
+        # this proves the real (not simulated) path actually runs when
+        # ghost_tools is available, end to end through compose().
+        trace = self._run(
+            {
+                "repo_path": "/home/user/ghost_tools",
+                "enum": "Status",
+                "member": "CONFIRMED_BY_REVIEW",
+            }
+        )
+        outcome = trace.steps[0].output_outcome
+        assert outcome is WizzleForensics.NEVER_PRODUCED
+        assert outcome.value in {m.value for m in WizzleForensics}
+        assert trace.overall_outcome.value == "pass"
