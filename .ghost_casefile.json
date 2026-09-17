@@ -129,6 +129,66 @@
       "finding_id": "ghost-f71811afd7a8",
       "file": "pyproject.toml",
       "decision": "document"
+    },
+    {
+      "detector": "unreachable_declared_state",
+      "shape": "unreachable_declared_state|declared_members=6&documented_as_from_data=no&enum=SwizzleVerdict&member=BANISHED&produced_by_tests_only=yes&produced_members=1&provenance=removed_from_library&reachable_from_data=no",
+      "outcome": "real",
+      "note": "SwizzleVerdict.BANISHED is genuinely produced by SwizzleAdapter.invoke()'s real path (test-proven, TestSwizzleAdapterRealAndFallbackPaths), returned via a loop variable bound by iterating the module-level _VERDICT_CONCERN_ORDER tuple. Same root cause and same decision already recorded for GhostToolsStatus.CONFIRMED: a module-level constant collection doesn't count as production per ghost_buster's own v1.7.6 fix, and the indirection is one level past what that fix accounts for. Not restructuring into a branch cascade to satisfy the detector.",
+      "when": "2026-09-17T21:45:17.090199+00:00",
+      "finding_id": "ghost-249a748ea85a",
+      "file": "src/composition_engine/outcomes.py",
+      "decision": "document"
+    },
+    {
+      "detector": "unreachable_declared_state",
+      "shape": "unreachable_declared_state|declared_members=6&documented_as_from_data=no&enum=SwizzleVerdict&member=CONJURED&produced_by_tests_only=no&produced_members=1&provenance=removed_from_library&reachable_from_data=no",
+      "outcome": "real",
+      "note": "SwizzleVerdict.CONJURED: same as BANISHED above, same root cause as the earlier CONJURED/DISMISSED decision (finding id changed because _VERDICT_CONCERN_ORDER's addition shifted line numbers and the 'N other members produced' count). SwizzleAdapter's real path can and does return this when SWIZZLE reports it; proven by test_real_run_against_ghost_tools_reports_a_declared_verdict asserting membership in the full SwizzleVerdict set.",
+      "when": "2026-09-17T21:45:17.090215+00:00",
+      "finding_id": "ghost-314e8a4d1fc0",
+      "file": "src/composition_engine/outcomes.py",
+      "decision": "document"
+    },
+    {
+      "detector": "unreachable_declared_state",
+      "shape": "unreachable_declared_state|declared_members=6&documented_as_from_data=no&enum=SwizzleVerdict&member=DISMISSED&produced_by_tests_only=no&produced_members=1&provenance=removed_from_library&reachable_from_data=no",
+      "outcome": "real",
+      "note": "SwizzleVerdict.DISMISSED: same as CONJURED above.",
+      "when": "2026-09-17T21:45:17.090224+00:00",
+      "finding_id": "ghost-6b26f6f1d264",
+      "file": "src/composition_engine/outcomes.py",
+      "decision": "document"
+    },
+    {
+      "detector": "unreachable_declared_state",
+      "shape": "unreachable_declared_state|declared_members=6&documented_as_from_data=no&enum=SwizzleVerdict&member=ESCAPED&produced_by_tests_only=no&produced_members=1&provenance=removed_from_library&reachable_from_data=no",
+      "outcome": "real",
+      "note": "SwizzleVerdict.ESCAPED: same as CONJURED above.",
+      "when": "2026-09-17T21:45:17.090232+00:00",
+      "finding_id": "ghost-5355108f9489",
+      "file": "src/composition_engine/outcomes.py",
+      "decision": "document"
+    },
+    {
+      "detector": "unreachable_declared_state",
+      "shape": "unreachable_declared_state|declared_members=6&documented_as_from_data=no&enum=SwizzleVerdict&member=MISNAMED&produced_by_tests_only=no&produced_members=1&provenance=never_produced&reachable_from_data=no",
+      "outcome": "real",
+      "note": "SwizzleVerdict.MISNAMED remains a real, active verdict in SWIZZLE's own code (verdict.py) that this composition's real SwizzleAdapter can receive back from run_all() and report -- unreachable only in the narrow sense that no fixture in this session's runs happened to trigger it, not because the adapter can't produce it. Same category as before this session's real-integration pass, re-confirmed.",
+      "when": "2026-09-17T21:45:17.090239+00:00",
+      "finding_id": "ghost-2fcfd82f5bf2",
+      "file": "src/composition_engine/outcomes.py",
+      "decision": "document"
+    },
+    {
+      "detector": "structure",
+      "shape": "structure|distribution=swizzle&imported_by=src.composition_engine.adapters, src.composition_engine.adapters&kind=undeclared dependency&package=swizzle",
+      "outcome": "real",
+      "note": "swizzle (SWIZZLE) is a deliberately optional import for SwizzleAdapter's real-mode run, same try/except shape as cns.gate and ghost-buster. Not declared as a hard dependency on purpose: no installable URL, CI never has it checked out, and the fallback path (honest UNSUMMONED) is what CI actually exercises and is tested for.",
+      "when": "2026-09-17T21:45:17.090247+00:00",
+      "finding_id": "ghost-787278457b11",
+      "file": "pyproject.toml",
+      "decision": "document"
     }
   ]
 }

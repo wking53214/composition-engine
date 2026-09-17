@@ -191,12 +191,28 @@ composer.register_translation("verdict", "decision", translate_verdict_to_decisi
 | `docs/LIBRARY_COMPOSITION_GUIDE.md` | Complete guide (universality, scaling) |
 | `docs/CREATING_CUSTOM_ADAPTERS.md` | How to create adapters for any system |
 
-`WizzleAdapter` does a real git-history check via `ghost_buster.forensics`
-when ghost_tools is installed alongside this repo (`pip install -e
-/path/to/ghost_tools`, not a listed dependency -- same optional-import shape
-as the CNS backend) and an honest `UNKNOWN` otherwise. CI never has
-ghost_tools checked out, so it always exercises the fallback path; the real
-path is covered separately, skipped automatically when unavailable.
+All four core adapters do real work when their tool is installed alongside
+this repo and their subject carries what that tool needs; an honest
+"couldn't tell" outcome otherwise, never a fabricated verdict. None of these
+are listed dependencies -- same optional-import shape as the CNS backend,
+for the same reason (no installable URL to declare them against, and CI
+never has any of them checked out, so it always exercises the fallback
+paths; the real paths are covered separately and skip automatically when
+unavailable):
+
+| Adapter | Real when | Needs |
+|---|---|---|
+| `SwizzleAdapter` | SWIZZLE installed (`pip install -e /path/to/SWIZZLE`) | `subject["ghost_tools_path"]` -- SWIZZLE red-teams a scanner, not a subject |
+| `GhostToolsAdapter` | ghost_tools installed | `subject["repo_path"]` (or a pre-computed `subject["findings"]`) |
+| `WizzleAdapter` | ghost_tools installed | `subject["repo_path"]`, `subject["enum"]`, `subject["member"]` |
+| `InnovationOSAdapter` | always -- there's no real Innovation OS to call, this is the governance judgment itself | nothing external |
+
+The four don't share one subject shape (see `register_core_adapters`'
+docstring for why not), so composing all four into one real four-system
+circle means passing a subject that carries all three of `ghost_tools_path`,
+`repo_path`, `enum` and `member` at once -- not the tidy `{"repo",
+"commit"}` the Quick Start example above uses, which is illustrative rather
+than a real four-adapter run.
 
 ## Usage Patterns
 

@@ -147,12 +147,18 @@ class TestTimelineFormatting:
         # Converting the literals to enum members silently changed this text to
         # "SwizzleVerdict.ESCAPED" until outcome_value was applied. Nothing
         # else asserts on it.
+        #
+        # A bare {"repo": "x"} subject carries none of what SwizzleAdapter's
+        # real path needs (subject["ghost_tools_path"]), so it honestly
+        # reports "unsummoned" -- SWIZZLE's own word for a harness that
+        # didn't run -- rather than the fixed "escaped" placeholder this test
+        # used to see before SwizzleAdapter called real SWIZZLE.
         composer = LibraryComposer()
         register_core_adapters(composer)
         register_core_translation_rules(composer)
         trace = composer.compose(["swizzle", "ghost_tools"], {"repo": "x"}, cycle=1)
         timeline = trace.timeline()
-        assert "escaped" in timeline
+        assert "unsummoned" in timeline
         assert "SwizzleVerdict" not in timeline
 
 
@@ -360,3 +366,100 @@ class TestWizzleAdapterRealAndFallbackPaths:
         assert outcome is WizzleForensics.NEVER_PRODUCED
         assert outcome.value in {m.value for m in WizzleForensics}
         assert trace.overall_outcome.value == "pass"
+
+
+def _importable(name):
+    return __import__("importlib").util.find_spec(name) is not None
+
+
+class TestSwizzleAdapterRealAndFallbackPaths:
+    """SwizzleAdapter now runs SWIZZLE's real warp catalogue against a real
+    ghost_tools checkout when both are available, honest UNSUMMONED
+    otherwise. Both paths through compose(), not through a SwizzleVerdict
+    picked by hand.
+    """
+
+    @staticmethod
+    def _run(subject):
+        from composition_engine.adapters import SwizzleAdapter
+
+        composer = LibraryComposer()
+        composer.register_adapter(SwizzleAdapter())
+        return composer.compose(["swizzle"], subject, cycle=1)
+
+    def test_no_ghost_tools_path_is_unsummoned_not_a_guess(self):
+        trace = self._run({"repo": "x"})
+        assert trace.steps[0].output_outcome is SwizzleVerdict.UNSUMMONED
+
+    def test_swizzle_not_importable_is_unsummoned(self, monkeypatch):
+        import composition_engine.adapters as adapters_mod
+
+        monkeypatch.setattr(adapters_mod, "HAS_SWIZZLE", False)
+        trace = self._run({"ghost_tools_path": "/home/user/ghost_tools"})
+        assert trace.steps[0].output_outcome is SwizzleVerdict.UNSUMMONED
+
+    def test_an_only_filter_matching_nothing_is_unsummoned(self, monkeypatch):
+        import composition_engine.adapters as adapters_mod
+
+        if not _importable("swizzle"):
+            pytest.skip("SWIZZLE not installed alongside this checkout")
+        trace = self._run(
+            {"ghost_tools_path": "/home/user/ghost_tools", "only": "no-warp-named-this"}
+        )
+        assert trace.steps[0].output_outcome is SwizzleVerdict.UNSUMMONED
+
+    @pytest.mark.skipif(not _importable("swizzle"), reason="SWIZZLE not installed alongside this checkout")
+    def test_real_run_against_ghost_tools_reports_a_declared_verdict(self):
+        # Not asserting which verdict -- SWIZZLE's real catalogue changes
+        # over time and so may what it finds. Asserting that this is a real
+        # run: a declared SwizzleVerdict, produced by actually invoking
+        # swizzle.run.run_all() against ghost_tools' real repository, read
+        # back through the real compose() path including the vocabulary
+        # check.
+        trace = self._run({"ghost_tools_path": "/home/user/ghost_tools"})
+        outcome = trace.steps[0].output_outcome
+        assert outcome in set(SwizzleVerdict)
+        assert trace.steps[0].metadata["outcome_declared"] is True
+
+
+class TestGhostToolsAdapterRealScanPath:
+    """GhostToolsAdapter's real path: an actual ghost_buster subprocess scan
+    of a real repository, not a hand-built findings list.
+    """
+
+    @staticmethod
+    def _run(subject):
+        from composition_engine.adapters import GhostToolsAdapter
+
+        composer = LibraryComposer()
+        composer.register_adapter(GhostToolsAdapter())
+        return composer.compose(["ghost_tools"], subject, cycle=1)
+
+    def test_findings_list_wins_over_repo_path_when_both_given(self):
+        # Cheap to check without a real scan: findings takes priority, per
+        # the adapter's own docstring, so a caller who already has results
+        # never pays for a redundant real scan.
+        trace = self._run(
+            {
+                "repo_path": "/home/user/ghost_tools",
+                "findings": [{"status": "rejected"}],
+            }
+        )
+        assert trace.steps[0].output_outcome is GhostToolsStatus.REJECTED
+
+    @pytest.mark.skipif(not _importable("ghost_buster"), reason="ghost_tools not installed alongside this checkout")
+    def test_real_scan_of_composition_engine_itself_reports_a_declared_status(self):
+        # composition-engine's own repository, scanned for real via
+        # ghost_buster's actual CLI as a subprocess -- proof the real path
+        # runs end to end, not a mock of what a scan would return.
+        trace = self._run({"repo_path": "/home/user/composition-engine"})
+        outcome = trace.steps[0].output_outcome
+        assert outcome in set(GhostToolsStatus)
+        assert trace.steps[0].metadata["outcome_declared"] is True
+
+    def test_an_unreadable_repo_path_is_a_cautious_reasoned_not_a_crash(self):
+        # No findings possible (nothing there to scan), no exception either
+        # -- _run_ghost_buster_scan fails closed to None, which this adapter
+        # reads the same as "no findings supplied".
+        trace = self._run({"repo_path": "/no/such/path/at/all"})
+        assert trace.steps[0].output_outcome is GhostToolsStatus.REASONED

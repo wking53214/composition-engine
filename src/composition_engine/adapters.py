@@ -6,8 +6,11 @@ for the LibraryComposer to orchestrate.
 
 from __future__ import annotations
 
+import json
+import subprocess
+import sys
 from pathlib import Path
-from typing import Any, Dict, Optional, Set
+from typing import Any, Dict, List, Optional, Set
 
 from .compose_library import SystemAdapter, SystemModel
 from .outcomes import (
@@ -35,12 +38,61 @@ try:
 except ImportError:
     HAS_GHOST_TOOLS_FORENSICS = False
 
+# ghost_buster's own CLI, invoked as a subprocess rather than imported: its
+# scan pipeline (ghost_buster/pipeline.py's gather()) takes a full argparse
+# Namespace as its argument, built from ~30 flags this repo has no business
+# reconstructing and keeping in sync with. The CLI, not that internal
+# function, is ghost_buster's stable public contract -- the same reasoning
+# WizzleAdapter's placeholder comment already stated before any of this was
+# real ("In real execution, this invokes ghost_buster.cli"). Importability
+# of the package itself is still what gates whether the subprocess is
+# attempted at all, so one flag covers both this adapter's manual-findings
+# path and its real-scan path.
+HAS_GHOST_TOOLS_CLI = HAS_GHOST_TOOLS_FORENSICS
+
+# SWIZZLE's own run pipeline, imported directly: unlike ghost_buster's CLI,
+# run_all()/catalogue() are a clean function-level API with no argparse
+# Namespace to reconstruct, so there's no stability reason to shell out
+# instead.
+try:
+    from swizzle.run import run_all as swizzle_run_all
+    from swizzle.warps import catalogue as swizzle_catalogue
+
+    HAS_SWIZZLE = True
+except ImportError:
+    HAS_SWIZZLE = False
+
+
+# Ordered most- to least-concerning, same purpose as _STATUS_CONCERN_ORDER
+# below: pick the single worst verdict across a real SWIZZLE run's warps,
+# for an adapter whose output model is one verdict. CONJURED and ESCAPED
+# both breach in CANONICAL_TABLE (a false positive on a clean decoy, or
+# silence over a proven defect); MISNAMED and UNSUMMONED both retry (right
+# alarm, wrong place; or the harness itself never ran); BANISHED and
+# DISMISSED both pass.
+_VERDICT_CONCERN_ORDER = (
+    SwizzleVerdict.CONJURED,
+    SwizzleVerdict.ESCAPED,
+    SwizzleVerdict.UNSUMMONED,
+    SwizzleVerdict.MISNAMED,
+    SwizzleVerdict.DISMISSED,
+    SwizzleVerdict.BANISHED,
+)
+
 
 class SwizzleAdapter(SystemAdapter):
     """Adapter for SWIZZLE: adversarial test framework.
 
     SWIZZLE plants defects and tests whether scanners find them.
     Produces Verdict outcomes: BANISHED/ESCAPED/MISNAMED/CONJURED/DISMISSED/UNSUMMONED
+
+    SWIZZLE does not test an arbitrary "subject" the way the other three
+    adapters do -- it red-teams a scanner. Its own run_all() takes a ghost_tools
+    checkout, not a repo-and-commit pair, because SWIZZLE's job is "does this
+    scanner catch what I planted," not "is this repository healthy." That is
+    a real, structural difference from what this composition chain's other
+    three subjects mean, not an inconsistency to paper over: see
+    register_core_adapters' docstring for how a chain actually uses this.
     """
 
     def __init__(self):
@@ -55,24 +107,54 @@ class SwizzleAdapter(SystemAdapter):
         subject: Dict[str, Any],
         input_outcome: Optional[str] = None,
     ) -> str:
-        """Execute SWIZZLE test suite on subject.
+        """Run SWIZZLE's real warp catalogue against a ghost_tools checkout.
+
+        Real when SWIZZLE is importable and `subject["ghost_tools_path"]` is
+        given: runs every warp (or the subset matching `subject["only"]`,
+        SWIZZLE's own --only filter) against that checkout via
+        swizzle.run.run_all(), the exact function this adapter's placeholder
+        promised, and reports the single worst verdict among the outcomes --
+        the same worst-wins aggregation GhostToolsAdapter uses below, for the
+        same reason (this adapter's output model is one verdict per call).
+
+        input_outcome is accepted but not consulted, for the same reason
+        GhostToolsAdapter.invoke() doesn't consult it: SWIZZLE's own run
+        doesn't take "was this a retry" as an input, it just runs the warps
+        and reports what happened.
+
+        Falls back to UNSUMMONED -- SWIZZLE's own vocabulary for "the
+        harness didn't run" -- when SWIZZLE isn't installed or no
+        ghost_tools_path was given, rather than guessing at a verdict about
+        a test that never executed.
 
         Args:
-            subject: Repo/commit to test
-            input_outcome: Previous outcome if retesting after fix
+            subject: {"ghost_tools_path": path to scan, "only": optional
+                substring filter} or anything else (UNSUMMONED)
+            input_outcome: not consulted; see above
 
         Returns:
             Verdict: one of BANISHED/ESCAPED/MISNAMED/CONJURED/DISMISSED/UNSUMMONED
         """
-        # In real execution, this invokes SWIZZLE.run_warp() or run_all()
-        # For now, placeholder showing the interface
+        if not HAS_SWIZZLE or not isinstance(subject, dict):
+            return SwizzleVerdict.UNSUMMONED
 
-        if input_outcome == "retry":
-            # Retest after fix
-            return SwizzleVerdict.BANISHED  # defect was fixed; no longer found
-        else:
-            # Initial test
-            return SwizzleVerdict.ESCAPED  # defect found but not by our planted test
+        ghost_tools_path = subject.get("ghost_tools_path")
+        if not ghost_tools_path:
+            return SwizzleVerdict.UNSUMMONED
+
+        only = subject.get("only")
+        warps = list(swizzle_catalogue())
+        if only:
+            warps = [w for w in warps if only in w.name or only in w.targets]
+        if not warps:
+            return SwizzleVerdict.UNSUMMONED
+
+        outcomes = swizzle_run_all(warps, Path(ghost_tools_path))
+        present = {o.verdict.value for o in outcomes}
+        for verdict in _VERDICT_CONCERN_ORDER:
+            if verdict.value in present:
+                return verdict
+        return SwizzleVerdict.UNSUMMONED
 
 
 # Ordered most- to least-concerning: the statuses ghost_tools' own schema.py
@@ -107,6 +189,45 @@ _STATUS_CONCERN_ORDER = (
     GhostToolsStatus.REJECTED,
     GhostToolsStatus.SUPPRESSED,
 )
+
+_GHOST_BUSTER_SCAN_TIMEOUT_SECONDS = 120
+
+
+def _run_ghost_buster_scan(repo_path: Path) -> Optional[List[Dict[str, Any]]]:
+    """Run ghost_buster's real CLI against a repo and return its findings.
+
+    --json for machine output; --no-secrets/--no-tests/--no-branches/
+    --no-ledger keep this fast and non-interactive (--tests would need
+    --trust consent recorded first, and --secrets needs gitleaks installed
+    separately -- neither is this adapter's call to make on a caller's
+    behalf); --single-repo skips the cross-repository-seam prompt, since
+    an adapter call has no terminal to ask it at.
+
+    ghost-buster's own exit code is 1 whenever it found anything to report,
+    which is the normal case, not a failure -- only a genuine crash, a
+    timeout, or output that isn't the JSON it promised counts as this scan
+    not having run. Returns None for those, which the caller treats the
+    same as "no findings supplied": an honest REASONED, not a fabricated
+    CONFIRMED or a raised exception the rest of the composition wouldn't
+    survive.
+    """
+    try:
+        result = subprocess.run(
+            [
+                sys.executable, "-m", "ghost_buster.cli", str(repo_path),
+                "--json", "--no-secrets", "--no-tests", "--no-branches",
+                "--no-ledger", "--single-repo",
+            ],
+            capture_output=True, text=True,
+            timeout=_GHOST_BUSTER_SCAN_TIMEOUT_SECONDS,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    try:
+        findings = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        return None
+    return findings if isinstance(findings, list) else None
 
 
 class GhostToolsAdapter(SystemAdapter):
@@ -155,13 +276,23 @@ class GhostToolsAdapter(SystemAdapter):
         about a subject nobody has actually scanned.
 
         Args:
-            subject: Code/repo to scan, optionally with a "findings" list
+            subject: Code/repo to scan. Either a "findings" list already
+                shaped like ghost_buster's own output (each a dict with a
+                "status" key -- for tests and callers who already have
+                results), or a "repo_path" to scan for real via ghost_buster's
+                CLI. "findings" wins if both are given.
             input_outcome: Previous system's outcome (unused; see above)
 
         Returns:
             Status: one of CONFIRMED/REASONED/CONFIRMED_BY_REVIEW/REJECTED/SUPPRESSED
         """
-        findings = subject.get("findings") if isinstance(subject, dict) else None
+        if not isinstance(subject, dict):
+            return GhostToolsStatus.REASONED
+
+        findings = subject.get("findings")
+        if findings is None and subject.get("repo_path") and HAS_GHOST_TOOLS_CLI:
+            findings = _run_ghost_buster_scan(Path(subject["repo_path"]))
+
         if findings:
             present = {f.get("status") for f in findings if f.get("status")}
             for status in _STATUS_CONCERN_ORDER:
@@ -246,6 +377,13 @@ class InnovationOSAdapter(SystemAdapter):
 
     Takes input from SWIZZLE/ghost_tools/WIZZLE and produces a decision
     within the innovation lifecycle: PROPOSED/EVALUATED/APPROVED/REJECTED/BRANCHED
+
+    Unlike the other three, there is no real "Innovation OS" repository in
+    this library to call: this is that governance judgment itself, not a
+    client for one. Its invoke() below is not a stand-in for a real call
+    that could someday replace it -- weighing evidence from the other three
+    into one decision is the actual job, whether or not a fifth system ever
+    exists to check its work.
     """
 
     def __init__(self):
@@ -314,6 +452,32 @@ class InnovationOSAdapter(SystemAdapter):
 
 def register_core_adapters(composer: Any) -> None:
     """Register the four core system adapters with a LibraryComposer.
+
+    Every adapter now does real work when its tool is importable and its
+    subject carries what it needs, and an honest "can't tell" outcome
+    otherwise -- never a fabricated verdict. What each one needs is not the
+    same shape, because the four systems' real jobs are not the same shape:
+
+    - SwizzleAdapter needs subject["ghost_tools_path"]: a ghost_tools
+      checkout to red-team, since SWIZZLE tests a scanner, not a subject.
+    - GhostToolsAdapter needs subject["repo_path"] (or a pre-computed
+      subject["findings"] list): the repository to scan.
+    - WizzleAdapter needs subject["repo_path"], subject["enum"] and
+      subject["member"]: which declared-but-unproduced member to check, and
+      where -- a different question than either of the above, not a
+      restatement of them.
+    - InnovationOSAdapter needs nothing external. There is no real
+      "Innovation OS" repository in this library to call; its job is to
+      weigh whatever the other three concluded, which is exactly what its
+      invoke() already does. See its own docstring.
+
+    Composing all four into one four-system circle the way the README's
+    worked example does means the same subject dict has to carry all of
+    "ghost_tools_path", "repo_path", "enum" and "member" at once if every
+    step is to do real work rather than fall back -- a real difference from
+    the tidy single {"repo", "commit"} the demo currently passes, and worth
+    knowing before assuming a green run means all four adapters actually
+    ran for real.
 
     Args:
         composer: LibraryComposer instance to register adapters on

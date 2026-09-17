@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "totals": {
-    "runs": 14
+    "runs": 16
   },
   "runs": [
     {
@@ -423,6 +423,66 @@
         "found_remembered": 15,
         "scanned": 17
       }
+    },
+    {
+      "run_id": "2026-09-17T21:44:32+00:00:4e6580141a75",
+      "at": "2026-09-17T21:44:32+00:00",
+      "commit": "4e6580141a75f3d1ca8fcd3df811726d480256c2",
+      "tool_version": "1.7.8",
+      "checks": {
+        "structural": "ran",
+        "mutate": "not_run",
+        "kernel": "not_run",
+        "boundary": "not_run",
+        "structure": "ran",
+        "branches": "ran",
+        "tests": "ran",
+        "project": "ran",
+        "secrets": "ran",
+        "correlate": "ran",
+        "ledger": "ran"
+      },
+      "records": {
+        "baseline": "absent",
+        "casefile": "425d1d21aad026c3"
+      },
+      "link": "ec2751e68265b677",
+      "counts": {
+        "found": 17,
+        "primary": 17,
+        "found_remembered": 17,
+        "scanned": 17
+      }
+    },
+    {
+      "run_id": "2026-09-17T21:44:58+00:00:4e6580141a75",
+      "at": "2026-09-17T21:44:58+00:00",
+      "commit": "4e6580141a75f3d1ca8fcd3df811726d480256c2",
+      "tool_version": "1.7.8",
+      "checks": {
+        "structural": "ran",
+        "mutate": "not_run",
+        "kernel": "not_run",
+        "boundary": "not_run",
+        "structure": "ran",
+        "branches": "ran",
+        "tests": "ran",
+        "project": "ran",
+        "secrets": "declined",
+        "correlate": "ran",
+        "ledger": "ran"
+      },
+      "records": {
+        "baseline": "absent",
+        "casefile": "425d1d21aad026c3"
+      },
+      "link": "5103e69387c6b5bd",
+      "counts": {
+        "found": 17,
+        "primary": 17,
+        "found_remembered": 17,
+        "scanned": 17
+      }
     }
   ],
   "findings": {
@@ -506,6 +566,22 @@
       "absent_last_run": true,
       "dispositions": []
     },
+    "ghost-249a748ea85a": {
+      "detector": "unreachable_declared_state",
+      "file": "src/composition_engine/outcomes.py",
+      "summary": "'SwizzleVerdict.BANISHED' is declared and only test code puts anything into it, though 1 other member(s) of SwizzleVerdict are produced",
+      "renamed_from": "",
+      "severity": "major",
+      "first_seen": "2026-09-17T21:44:32+00:00",
+      "first_commit": "4e6580141a75f3d1ca8fcd3df811726d480256c2",
+      "last_seen": "2026-09-17T21:44:58+00:00",
+      "last_commit": "4e6580141a75f3d1ca8fcd3df811726d480256c2",
+      "runs_seen": 2,
+      "consecutive": 2,
+      "returns": 0,
+      "absent_last_run": false,
+      "dispositions": []
+    },
     "ghost-250e531e01f6": {
       "detector": "unreachable_declared_state",
       "file": "src/cns/outcomes.py",
@@ -568,6 +644,38 @@
       "consecutive": 0,
       "returns": 0,
       "absent_last_run": true,
+      "dispositions": []
+    },
+    "ghost-2fcfd82f5bf2": {
+      "detector": "unreachable_declared_state",
+      "file": "src/composition_engine/outcomes.py",
+      "summary": "'SwizzleVerdict.MISNAMED' is declared and no code ever puts anything into it, though 1 other member(s) of SwizzleVerdict are produced",
+      "renamed_from": "",
+      "severity": "minor",
+      "first_seen": "2026-09-17T21:44:32+00:00",
+      "first_commit": "4e6580141a75f3d1ca8fcd3df811726d480256c2",
+      "last_seen": "2026-09-17T21:44:58+00:00",
+      "last_commit": "4e6580141a75f3d1ca8fcd3df811726d480256c2",
+      "runs_seen": 2,
+      "consecutive": 2,
+      "returns": 0,
+      "absent_last_run": false,
+      "dispositions": []
+    },
+    "ghost-314e8a4d1fc0": {
+      "detector": "unreachable_declared_state",
+      "file": "src/composition_engine/outcomes.py",
+      "summary": "'SwizzleVerdict.CONJURED' is declared and no code ever puts anything into it, though 1 other member(s) of SwizzleVerdict are produced",
+      "renamed_from": "",
+      "severity": "major",
+      "first_seen": "2026-09-17T21:44:32+00:00",
+      "first_commit": "4e6580141a75f3d1ca8fcd3df811726d480256c2",
+      "last_seen": "2026-09-17T21:44:58+00:00",
+      "last_commit": "4e6580141a75f3d1ca8fcd3df811726d480256c2",
+      "runs_seen": 2,
+      "consecutive": 2,
+      "returns": 0,
+      "absent_last_run": false,
       "dispositions": []
     },
     "ghost-322b64ffe5e1": {
@@ -690,10 +798,10 @@
       "severity": "major",
       "first_seen": "2026-09-17T20:00:43+00:00",
       "first_commit": "ac7bdf79e179b1fac11e67eff9a64ffd1de5545a",
-      "last_seen": "2026-09-17T21:31:17+00:00",
-      "last_commit": "582a285844a4b6fa227c79bc70918602e84b3068",
-      "runs_seen": 11,
-      "consecutive": 11,
+      "last_seen": "2026-09-17T21:44:58+00:00",
+      "last_commit": "4e6580141a75f3d1ca8fcd3df811726d480256c2",
+      "runs_seen": 13,
+      "consecutive": 13,
       "returns": 0,
       "absent_last_run": false,
       "dispositions": []
@@ -706,10 +814,26 @@
       "severity": "minor",
       "first_seen": "2026-09-17T19:53:54+00:00",
       "first_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
-      "last_seen": "2026-09-17T21:31:17+00:00",
-      "last_commit": "582a285844a4b6fa227c79bc70918602e84b3068",
-      "runs_seen": 14,
-      "consecutive": 14,
+      "last_seen": "2026-09-17T21:44:58+00:00",
+      "last_commit": "4e6580141a75f3d1ca8fcd3df811726d480256c2",
+      "runs_seen": 16,
+      "consecutive": 16,
+      "returns": 0,
+      "absent_last_run": false,
+      "dispositions": []
+    },
+    "ghost-5355108f9489": {
+      "detector": "unreachable_declared_state",
+      "file": "src/composition_engine/outcomes.py",
+      "summary": "'SwizzleVerdict.ESCAPED' is declared and no code ever puts anything into it, though 1 other member(s) of SwizzleVerdict are produced",
+      "renamed_from": "",
+      "severity": "major",
+      "first_seen": "2026-09-17T21:44:32+00:00",
+      "first_commit": "4e6580141a75f3d1ca8fcd3df811726d480256c2",
+      "last_seen": "2026-09-17T21:44:58+00:00",
+      "last_commit": "4e6580141a75f3d1ca8fcd3df811726d480256c2",
+      "runs_seen": 2,
+      "consecutive": 2,
       "returns": 0,
       "absent_last_run": false,
       "dispositions": []
@@ -754,10 +878,10 @@
       "severity": "minor",
       "first_seen": "2026-09-17T21:09:53+00:00",
       "first_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
-      "last_seen": "2026-09-17T21:31:17+00:00",
-      "last_commit": "582a285844a4b6fa227c79bc70918602e84b3068",
-      "runs_seen": 3,
-      "consecutive": 3,
+      "last_seen": "2026-09-17T21:44:58+00:00",
+      "last_commit": "4e6580141a75f3d1ca8fcd3df811726d480256c2",
+      "runs_seen": 5,
+      "consecutive": 5,
       "returns": 0,
       "absent_last_run": false,
       "dispositions": []
@@ -810,6 +934,22 @@
       "absent_last_run": true,
       "dispositions": []
     },
+    "ghost-6b26f6f1d264": {
+      "detector": "unreachable_declared_state",
+      "file": "src/composition_engine/outcomes.py",
+      "summary": "'SwizzleVerdict.DISMISSED' is declared and no code ever puts anything into it, though 1 other member(s) of SwizzleVerdict are produced",
+      "renamed_from": "",
+      "severity": "major",
+      "first_seen": "2026-09-17T21:44:32+00:00",
+      "first_commit": "4e6580141a75f3d1ca8fcd3df811726d480256c2",
+      "last_seen": "2026-09-17T21:44:58+00:00",
+      "last_commit": "4e6580141a75f3d1ca8fcd3df811726d480256c2",
+      "runs_seen": 2,
+      "consecutive": 2,
+      "returns": 0,
+      "absent_last_run": false,
+      "dispositions": []
+    },
     "ghost-6b93a029c46e": {
       "detector": "unreachable_declared_state",
       "file": "src/composition_engine/outcomes.py",
@@ -818,10 +958,10 @@
       "severity": "minor",
       "first_seen": "2026-09-17T21:09:53+00:00",
       "first_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
-      "last_seen": "2026-09-17T21:31:17+00:00",
-      "last_commit": "582a285844a4b6fa227c79bc70918602e84b3068",
-      "runs_seen": 3,
-      "consecutive": 3,
+      "last_seen": "2026-09-17T21:44:58+00:00",
+      "last_commit": "4e6580141a75f3d1ca8fcd3df811726d480256c2",
+      "runs_seen": 5,
+      "consecutive": 5,
       "returns": 0,
       "absent_last_run": false,
       "dispositions": []
@@ -840,6 +980,22 @@
       "consecutive": 0,
       "returns": 0,
       "absent_last_run": true,
+      "dispositions": []
+    },
+    "ghost-787278457b11": {
+      "detector": "structure",
+      "file": "pyproject.toml",
+      "summary": "undeclared dependency: 'swizzle' (distribution 'swizzle') is imported by 2 module(s) and appears in no dependency declaration",
+      "renamed_from": "",
+      "severity": "major",
+      "first_seen": "2026-09-17T21:44:32+00:00",
+      "first_commit": "4e6580141a75f3d1ca8fcd3df811726d480256c2",
+      "last_seen": "2026-09-17T21:44:58+00:00",
+      "last_commit": "4e6580141a75f3d1ca8fcd3df811726d480256c2",
+      "runs_seen": 2,
+      "consecutive": 2,
+      "returns": 0,
+      "absent_last_run": false,
       "dispositions": []
     },
     "ghost-797b42c9c0c5": {
@@ -901,9 +1057,9 @@
       "last_seen": "2026-09-17T21:31:17+00:00",
       "last_commit": "582a285844a4b6fa227c79bc70918602e84b3068",
       "runs_seen": 3,
-      "consecutive": 3,
+      "consecutive": 0,
       "returns": 0,
-      "absent_last_run": false,
+      "absent_last_run": true,
       "dispositions": []
     },
     "ghost-90d08a31fa9f": {
@@ -978,10 +1134,10 @@
       "severity": "minor",
       "first_seen": "2026-09-17T21:09:53+00:00",
       "first_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
-      "last_seen": "2026-09-17T21:31:17+00:00",
-      "last_commit": "582a285844a4b6fa227c79bc70918602e84b3068",
-      "runs_seen": 3,
-      "consecutive": 3,
+      "last_seen": "2026-09-17T21:44:58+00:00",
+      "last_commit": "4e6580141a75f3d1ca8fcd3df811726d480256c2",
+      "runs_seen": 5,
+      "consecutive": 5,
       "returns": 0,
       "absent_last_run": false,
       "dispositions": []
@@ -1029,9 +1185,9 @@
       "last_seen": "2026-09-17T21:31:17+00:00",
       "last_commit": "582a285844a4b6fa227c79bc70918602e84b3068",
       "runs_seen": 3,
-      "consecutive": 3,
+      "consecutive": 0,
       "returns": 0,
-      "absent_last_run": false,
+      "absent_last_run": true,
       "dispositions": []
     },
     "ghost-c2a792ee014a": {
@@ -1045,9 +1201,9 @@
       "last_seen": "2026-09-17T21:31:17+00:00",
       "last_commit": "582a285844a4b6fa227c79bc70918602e84b3068",
       "runs_seen": 3,
-      "consecutive": 3,
+      "consecutive": 0,
       "returns": 0,
-      "absent_last_run": false,
+      "absent_last_run": true,
       "dispositions": []
     },
     "ghost-cd1ce4c7661a": {
@@ -1074,10 +1230,10 @@
       "severity": "major",
       "first_seen": "2026-09-17T21:09:53+00:00",
       "first_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
-      "last_seen": "2026-09-17T21:31:17+00:00",
-      "last_commit": "582a285844a4b6fa227c79bc70918602e84b3068",
-      "runs_seen": 3,
-      "consecutive": 3,
+      "last_seen": "2026-09-17T21:44:58+00:00",
+      "last_commit": "4e6580141a75f3d1ca8fcd3df811726d480256c2",
+      "runs_seen": 5,
+      "consecutive": 5,
       "returns": 0,
       "absent_last_run": false,
       "dispositions": []
@@ -1109,9 +1265,9 @@
       "last_seen": "2026-09-17T21:31:17+00:00",
       "last_commit": "582a285844a4b6fa227c79bc70918602e84b3068",
       "runs_seen": 3,
-      "consecutive": 3,
+      "consecutive": 0,
       "returns": 0,
-      "absent_last_run": false,
+      "absent_last_run": true,
       "dispositions": []
     },
     "ghost-e1d3c0d2b8a6": {
@@ -1138,10 +1294,10 @@
       "severity": "informational",
       "first_seen": "2026-09-17T21:09:53+00:00",
       "first_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
-      "last_seen": "2026-09-17T21:31:17+00:00",
-      "last_commit": "582a285844a4b6fa227c79bc70918602e84b3068",
-      "runs_seen": 3,
-      "consecutive": 3,
+      "last_seen": "2026-09-17T21:44:58+00:00",
+      "last_commit": "4e6580141a75f3d1ca8fcd3df811726d480256c2",
+      "runs_seen": 5,
+      "consecutive": 5,
       "returns": 0,
       "absent_last_run": false,
       "dispositions": []
@@ -1202,10 +1358,10 @@
       "severity": "major",
       "first_seen": "2026-09-17T21:09:53+00:00",
       "first_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
-      "last_seen": "2026-09-17T21:31:17+00:00",
-      "last_commit": "582a285844a4b6fa227c79bc70918602e84b3068",
-      "runs_seen": 3,
-      "consecutive": 3,
+      "last_seen": "2026-09-17T21:44:58+00:00",
+      "last_commit": "4e6580141a75f3d1ca8fcd3df811726d480256c2",
+      "runs_seen": 5,
+      "consecutive": 5,
       "returns": 0,
       "absent_last_run": false,
       "dispositions": []
@@ -1218,10 +1374,10 @@
       "severity": "minor",
       "first_seen": "2026-09-17T21:09:53+00:00",
       "first_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
-      "last_seen": "2026-09-17T21:31:17+00:00",
-      "last_commit": "582a285844a4b6fa227c79bc70918602e84b3068",
-      "runs_seen": 3,
-      "consecutive": 3,
+      "last_seen": "2026-09-17T21:44:58+00:00",
+      "last_commit": "4e6580141a75f3d1ca8fcd3df811726d480256c2",
+      "runs_seen": 5,
+      "consecutive": 5,
       "returns": 0,
       "absent_last_run": false,
       "dispositions": []
@@ -1234,10 +1390,10 @@
       "severity": "minor",
       "first_seen": "2026-09-17T21:09:53+00:00",
       "first_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
-      "last_seen": "2026-09-17T21:31:17+00:00",
-      "last_commit": "582a285844a4b6fa227c79bc70918602e84b3068",
-      "runs_seen": 3,
-      "consecutive": 3,
+      "last_seen": "2026-09-17T21:44:58+00:00",
+      "last_commit": "4e6580141a75f3d1ca8fcd3df811726d480256c2",
+      "runs_seen": 5,
+      "consecutive": 5,
       "returns": 0,
       "absent_last_run": false,
       "dispositions": []
@@ -1250,10 +1406,10 @@
       "severity": "minor",
       "first_seen": "2026-09-17T21:09:53+00:00",
       "first_commit": "47dfe79d21bf26f6be4ab7868f71c580e33a0ad1",
-      "last_seen": "2026-09-17T21:31:17+00:00",
-      "last_commit": "582a285844a4b6fa227c79bc70918602e84b3068",
-      "runs_seen": 3,
-      "consecutive": 3,
+      "last_seen": "2026-09-17T21:44:58+00:00",
+      "last_commit": "4e6580141a75f3d1ca8fcd3df811726d480256c2",
+      "runs_seen": 5,
+      "consecutive": 5,
       "returns": 0,
       "absent_last_run": false,
       "dispositions": []
