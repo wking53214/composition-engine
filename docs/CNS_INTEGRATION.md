@@ -4,17 +4,16 @@ The composition engine is written to run on CNS infrastructure, preferring
 authoritative implementations from `cns.gate` and falling back to local ones
 when they are absent.
 
-> **Measured status: the fallback is what runs, and it cannot currently be
-> anything else.** This repository's own package is named `cns` (at
-> `src/cns`), and so is the external gate infrastructure this bridge reaches
-> for (`cns.gate`). One name, one winner per process, and the local package
-> wins. `from cns.gate import ...` therefore looks inside this repository,
-> finds no `gate` module, and takes the `except ImportError` branch --
-> `HAS_CNS` is False, and `GateOutcome`, `subject_digest` and `resolve` are
-> the local stand-ins defined in `cns_integration.py`. Installing real CNS
-> alongside does not change the outcome. Renaming one of the two packages is
-> the fix; which one is a decision nobody has made yet. Read what follows as
-> the design, not as a description of the code path currently executing.
+> **Formerly a fixed fallback, now a real fork in the road.** This
+> repository's own package used to be named `cns`, which collided with the
+> external gate infrastructure this bridge reaches for (`cns.gate`): one
+> name, one winner per process, and the local package always won, so
+> `HAS_CNS` could never be `True` no matter what was installed. The package
+> is now `composition_engine` (`src/composition_engine`), so `from cns.gate
+> import ...` resolves to a real, separately-installed `cns` package if one
+> is present on the path, and to the `except ImportError` fallback in
+> `cns_integration.py` if it is not. What follows describes both paths;
+> `get_cns_status()` tells you which one a given run actually took.
 
 ## Architecture
 
@@ -84,7 +83,7 @@ composer = UniversalComposer(
 ### 3. Verify Integration
 
 ```python
-from cns import get_cns_status
+from composition_engine import get_cns_status
 
 status = get_cns_status()
 print(f"Has CNS: {status['has_cns']}")
@@ -176,7 +175,7 @@ import sys
 sys.path.insert(0, '/path/to/CNS')
 sys.path.insert(0, '/path/to/composition-engine/src')
 
-from cns import (
+from composition_engine import (
     create_cns_composer,
     register_cns_adapters,
     register_cns_translation_rules,
@@ -217,7 +216,7 @@ Composition engine works standalone if CNS is not available:
 
 ```python
 # No CNS required
-from cns import UniversalComposer
+from composition_engine import UniversalComposer
 
 composer = UniversalComposer()
 # ... register adapters, execute compositions ...
@@ -269,7 +268,7 @@ composer = UniversalComposer(
 ## Status Check in Code
 
 ```python
-from cns import HAS_CNS, get_cns_status
+from composition_engine import HAS_CNS, get_cns_status
 
 if HAS_CNS:
     print("✅ Running via CNS vein")

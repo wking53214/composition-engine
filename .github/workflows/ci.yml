@@ -27,8 +27,8 @@ jobs:
       - name: Test
         run: python -m pytest -q
 
-      # The package resolves as `cns` for an installed copy, not just under
+      # The package resolves as `composition_engine` for an installed copy, not just under
       # pytest's pythonpath. Checked separately because the two paths are
       # what disagreed before pyproject.toml existed.
       - name: Import check
-        run: python -c "import cns; print(cns.__file__)"
+        run: python -c "import composition_engine; print(composition_engine.__file__)"

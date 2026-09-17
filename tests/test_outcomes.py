@@ -9,9 +9,9 @@ proven to check something.
 
 import pytest
 
-from cns.compose_library import LibraryComposer, SystemAdapter, SystemModel
-from cns.adapters import register_core_adapters, register_core_translation_rules
-from cns.outcomes import (
+from composition_engine.compose_library import LibraryComposer, SystemAdapter, SystemModel
+from composition_engine.adapters import register_core_adapters, register_core_translation_rules
+from composition_engine.outcomes import (
     GhostToolsStatus,
     InnovationOSDecision,
     SwizzleVerdict,
@@ -160,7 +160,7 @@ class TestCanonicalTable:
     """The table that replaced four near-identical branch cascades."""
 
     def _canon(self, outcome, model):
-        from cns.compose_library import CompositionStep, LibraryComposer
+        from composition_engine.compose_library import CompositionStep, LibraryComposer
 
         step = CompositionStep(
             system_name="x", output_outcome=outcome, output_model=model
@@ -168,12 +168,12 @@ class TestCanonicalTable:
         return LibraryComposer()._canonicalize(step)
 
     def test_every_model_has_an_entry(self):
-        from cns.compose_library import CANONICAL_TABLE
+        from composition_engine.compose_library import CANONICAL_TABLE
 
         assert set(CANONICAL_TABLE) == set(SystemModel)
 
     def test_known_values_map_as_before(self):
-        from cns.cns_integration import GateOutcome
+        from composition_engine.cns_integration import GateOutcome
 
         assert self._canon("banished", SystemModel.SWIZZLE_VERDICT) is GateOutcome.PASS
         assert (
@@ -190,7 +190,7 @@ class TestCanonicalTable:
         )
 
     def test_unlisted_value_retries_for_a_system_vocabulary(self):
-        from cns.cns_integration import GateOutcome
+        from composition_engine.cns_integration import GateOutcome
 
         assert (
             self._canon("misnamed", SystemModel.SWIZZLE_VERDICT) is GateOutcome.RETRY
@@ -202,7 +202,7 @@ class TestCanonicalTable:
         # fall-through. A gate that cannot read its own vocabulary has failed,
         # it has not merely failed to decide yet. Asserted so that anyone
         # "tidying" the default into RETRY has to argue with a red test.
-        from cns.cns_integration import GateOutcome
+        from composition_engine.cns_integration import GateOutcome
 
         assert (
             self._canon("nonsense", SystemModel.CNS_GATE_OUTCOME)
@@ -214,7 +214,7 @@ class TestCanonicalTable:
     def test_every_declared_word_lands_somewhere(self, model):
         # Not an assertion about which outcome; an assertion that canonicalising
         # a word the vocabulary declares never raises and never returns None.
-        from cns.cns_integration import GateOutcome
+        from composition_engine.cns_integration import GateOutcome
 
         for word in vocabulary_for(model):
             assert isinstance(self._canon(word, model), GateOutcome)

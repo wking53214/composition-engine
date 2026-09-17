@@ -22,7 +22,7 @@ pip install -e ".[dev]"   # editable, with pytest
 pytest -q
 ```
 
-The package is `cns` and lives at `src/cns`. `pytest` alone works in a
+The package is `composition_engine` and lives at `src/composition_engine`. `pytest` alone works in a
 fresh checkout without installing first, because `pyproject.toml` puts
 `src` on the test path.
 
@@ -31,7 +31,7 @@ fresh checkout without installing first, because `pyproject.toml` puts
 ### Universal (No Dependencies)
 
 ```python
-from cns.core import UniversalComposer, SystemAdapter
+from composition_engine.core import UniversalComposer, SystemAdapter
 
 # Define a system adapter
 class MyAnalyzer(SystemAdapter):
@@ -56,8 +56,8 @@ print(trace.timeline())
 ### With CNS Backend
 
 ```python
-from cns.cns_backend import create_cns_composer
-from cns.adapters_cns import register_cns_adapters, register_cns_translation_rules
+from composition_engine.cns_backend import create_cns_composer
+from composition_engine.adapters_cns import register_cns_adapters, register_cns_translation_rules
 
 # Create CNS-configured composer (with subject binding, canonicalization, convergence)
 composer = create_cns_composer()
@@ -76,19 +76,18 @@ print(f"Outcome: {trace.overall_outcome}")  # pass, retry, or terminal_breach
 print(f"Converged: {trace.converged}")
 ```
 
-**Name collision, worth knowing before you rely on the CNS backend.** This
-repository's own package is named `cns`, and the external CNS gate
-infrastructure it optionally imports is *also* named `cns` (`cns.gate`).
-Whichever `cns` wins the import wins it for the whole process, and a local
-package beats an installed one on the usual path order. So
-`src/cns/cns_integration.py` looks for `cns.gate` inside this repository,
-does not find it, and takes the fallback branch: `HAS_CNS` is False and the
-local implementations of `GateOutcome`, `subject_digest` and `resolve` are
-what actually run. Installing real CNS alongside does not change that. The
-fallback is a working implementation, so nothing is broken -- but "with CNS
-backend" currently means "with the local stand-ins", and the two are only
-as equivalent as they have been kept. Renaming one of the two packages is
-the fix, and which one to rename is a call nobody has made yet.
+**Name collision, fixed.** This repository's own package used to be named
+`cns`, the same name as the external CNS gate infrastructure it imports as
+`cns.gate`. One name, one winner per process, and the local package always
+won on the usual path order, so `cns_integration.py`'s `from cns.gate import
+...` looked inside this repository, found no `gate` module, and always took
+the fallback branch. `HAS_CNS` could never be `True` no matter what was
+installed alongside it. The package is now `composition_engine`
+(`src/composition_engine`), so `cns.gate` resolves to a real,
+separately-installed `cns` package when one is present, and to the local
+fallback when it isn't. Either way the fallback is a complete, working
+implementation of `GateOutcome`, `subject_digest` and `resolve` -- check
+`get_cns_status()` at runtime to see which one actually ran, don't assume.
 
 ## Architecture
 
@@ -183,9 +182,9 @@ composer.register_translation("verdict", "decision", translate_verdict_to_decisi
 
 | Path | Purpose |
 |------|---------|
-| `src/cns/core.py` | Universal orchestrator (system-agnostic) |
-| `src/cns/cns_backend.py` | CNS outcomes, subject binding, convergence |
-| `src/cns/adapters_cns.py` | SWIZZLE, ghost_tools, WIZZLE, Innovation OS |
+| `src/composition_engine/core.py` | Universal orchestrator (system-agnostic) |
+| `src/composition_engine/cns_backend.py` | CNS outcomes, subject binding, convergence |
+| `src/composition_engine/adapters_cns.py` | SWIZZLE, ghost_tools, WIZZLE, Innovation OS |
 | `tests/test_library_composition.py` | 21 comprehensive tests |
 | `docs/LIBRARY_COMPOSITION_GUIDE.md` | Complete guide (universality, scaling) |
 | `docs/CREATING_CUSTOM_ADAPTERS.md` | How to create adapters for any system |
@@ -281,7 +280,7 @@ The suite covers:
 ## Outcome vocabularies
 
 Each system answers in its own words, and the words are declared in
-`src/cns/outcomes.py`: `SwizzleVerdict`, `GhostToolsStatus`,
+`src/composition_engine/outcomes.py`: `SwizzleVerdict`, `GhostToolsStatus`,
 `GhostToolsSeverity`, `WizzleForensics`, `InnovationOSDecision`. They are
 `str` enums, the same shape as `GateOutcome`, so `SwizzleVerdict.BANISHED ==
 "banished"` and every existing caller keeps working.

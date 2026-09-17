@@ -18,21 +18,26 @@ Homepage = "https://github.com/wking53214/composition-engine"
 [project.optional-dependencies]
 dev = ["pytest>=8"]
 
-# src layout. The package is `cns`, living at src/cns, so `import cns` works
-# the same way for the test suite, the docs' examples and an installed copy.
-# Before this file existed those three disagreed: the tests imported `cns`,
-# the README imported `src.cns`, and nothing made either resolve, so the
-# suite could not be collected at all.
+# src layout. The package is `composition_engine`, living at
+# src/composition_engine, so `import composition_engine` works the same way
+# for the test suite, the docs' examples and an installed copy.
+#
+# It was named `cns` through 7e35297. That collided with the external CNS
+# gate infrastructure this repo's cns_integration.py tries to import as
+# `cns.gate`: one name, one winner per process, and the local package always
+# won, so HAS_CNS could never be True no matter what was installed alongside
+# it. Renamed so `cns.gate` resolves to a real, separately-installed `cns` if
+# one is present -- see docs/CNS_INTEGRATION.md.
 [tool.setuptools]
 package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["cns*"]
+include = ["composition_engine*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 # So a bare `pytest` works in a fresh checkout without `pip install -e .`
-# first. An installed copy resolves `cns` the same way and this entry is
-# then redundant rather than conflicting.
+# first. An installed copy resolves `composition_engine` the same way and
+# this entry is then redundant rather than conflicting.
 pythonpath = ["src"]
