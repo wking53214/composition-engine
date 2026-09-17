@@ -198,19 +198,25 @@ class LibraryComposer:
         for system_name in composition_path:
             adapter = self.adapters[system_name]
 
-            # Invoke system
-            outcome = adapter.invoke(subject, input_outcome=previous_outcome)
-
-            # Translate if needed
-            if previous_outcome and steps:
+            # Translate the INCOMING outcome into a model this adapter accepts,
+            # before invoking it. Selection is non-destructive and deterministic:
+            # adapter.input_models is the adapter's standing declaration and must
+            # not be consumed, and a set's iteration order is not stable.
+            incoming = previous_outcome
+            if incoming is not None and steps:
                 from_model = steps[-1].output_model
-                to_model = adapter.input_models.pop()  # first compatible model
-                if from_model != to_model:
-                    outcome = self._translate(outcome, from_model, to_model)
+                if from_model not in adapter.input_models:
+                    for to_model in sorted(adapter.input_models, key=str):
+                        if (from_model, to_model) in self.translation_rules:
+                            incoming = self._translate(incoming, from_model, to_model)
+                            break
+
+            # Invoke system
+            outcome = adapter.invoke(subject, input_outcome=incoming)
 
             step = CompositionStep(
                 system_name=system_name,
-                input_outcome=previous_outcome,
+                input_outcome=incoming,
                 output_outcome=outcome,
                 output_model=adapter.output_model,
                 subject_hash=subject_hash,
