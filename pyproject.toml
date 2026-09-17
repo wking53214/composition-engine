@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "composition-engine"
+version = "0.1.0"
+description = "Universal system orchestrator: compose heterogeneous systems by declared outcome model, without a universal translator"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "William King" }]
+keywords = ["orchestration", "composition", "adapters", "outcome-model"]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/wking53214/composition-engine"
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+# src layout. The package is `cns`, living at src/cns, so `import cns` works
+# the same way for the test suite, the docs' examples and an installed copy.
+# Before this file existed those three disagreed: the tests imported `cns`,
+# the README imported `src.cns`, and nothing made either resolve, so the
+# suite could not be collected at all.
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["cns*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# So a bare `pytest` works in a fresh checkout without `pip install -e .`
+# first. An installed copy resolves `cns` the same way and this entry is
+# then redundant rather than conflicting.
+pythonpath = ["src"]

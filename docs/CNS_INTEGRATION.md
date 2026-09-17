@@ -1,6 +1,20 @@
 # CNS Integration: Running Through the CNS Vein
 
-The composition engine is wired directly into CNS infrastructure and uses authoritative implementations from `cns.gate`.
+The composition engine is written to run on CNS infrastructure, preferring
+authoritative implementations from `cns.gate` and falling back to local ones
+when they are absent.
+
+> **Measured status: the fallback is what runs, and it cannot currently be
+> anything else.** This repository's own package is named `cns` (at
+> `src/cns`), and so is the external gate infrastructure this bridge reaches
+> for (`cns.gate`). One name, one winner per process, and the local package
+> wins. `from cns.gate import ...` therefore looks inside this repository,
+> finds no `gate` module, and takes the `except ImportError` branch --
+> `HAS_CNS` is False, and `GateOutcome`, `subject_digest` and `resolve` are
+> the local stand-ins defined in `cns_integration.py`. Installing real CNS
+> alongside does not change the outcome. Renaming one of the two packages is
+> the fix; which one is a decision nobody has made yet. Read what follows as
+> the design, not as a description of the code path currently executing.
 
 ## Architecture
 
@@ -203,7 +217,7 @@ Composition engine works standalone if CNS is not available:
 
 ```python
 # No CNS required
-from composition_engine.src.cns import UniversalComposer
+from cns import UniversalComposer
 
 composer = UniversalComposer()
 # ... register adapters, execute compositions ...
@@ -226,7 +240,7 @@ When both CNS and composition-engine are available:
 4. **Convergence** detected per CNS rules (RETRY = exploring)
 5. **Canonicalization** maps to CNS gate outcomes
 
-**Result**: Composition engine is not just compatible with CNS—it's an extension of CNS governance infrastructure, running natively on CNS foundations.
+**Result**: Composition engine is designed as an extension of CNS governance infrastructure rather than merely a compatible neighbour. Whether it is running on CNS foundations or on the local stand-ins is a runtime question, answered by `get_cns_status()`; see the note at the top of this document for why the answer is currently the stand-ins.
 
 ## Extending with Custom Backends
 
@@ -269,10 +283,15 @@ for key, value in status.items():
 
 ## Summary
 
-Composition engine **transparently integrates with CNS**:
+Composition engine **is built to integrate with CNS**:
 - Detects authoritative CNS when available
 - Falls back gracefully if not
-- Exposes integration status at runtime
+- Exposes integration status at runtime via `get_cns_status()`
+
+Today `get_cns_status()` reports `local_fallback` for both sources, for the
+package-name reason given at the top of this document. Check it rather than
+assuming, in any code whose correctness depends on which implementation it
+got.
 - Uses real CNS semantics for subject binding and canonicalization
 - Can run standalone if needed
 

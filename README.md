@@ -15,12 +15,23 @@
 - Uses targeted translation rules only where models differ
 - No universal translator needed—linear scaling to any number of systems
 
+## Install
+
+```bash
+pip install -e ".[dev]"   # editable, with pytest
+pytest -q                 # 25 tests
+```
+
+The package is `cns` and lives at `src/cns`. `pytest` alone works in a
+fresh checkout without installing first, because `pyproject.toml` puts
+`src` on the test path.
+
 ## Quick Start
 
 ### Universal (No Dependencies)
 
 ```python
-from src.cns.core import UniversalComposer, SystemAdapter
+from cns.core import UniversalComposer, SystemAdapter
 
 # Define a system adapter
 class MyAnalyzer(SystemAdapter):
@@ -45,8 +56,8 @@ print(trace.timeline())
 ### With CNS Backend
 
 ```python
-from src.cns.cns_backend import create_cns_composer
-from src.cns.adapters_cns import register_cns_adapters, register_cns_translation_rules
+from cns.cns_backend import create_cns_composer
+from cns.adapters_cns import register_cns_adapters, register_cns_translation_rules
 
 # Create CNS-configured composer (with subject binding, canonicalization, convergence)
 composer = create_cns_composer()
@@ -64,6 +75,20 @@ trace = composer.compose(
 print(f"Outcome: {trace.overall_outcome}")  # pass, retry, or terminal_breach
 print(f"Converged: {trace.converged}")
 ```
+
+**Name collision, worth knowing before you rely on the CNS backend.** This
+repository's own package is named `cns`, and the external CNS gate
+infrastructure it optionally imports is *also* named `cns` (`cns.gate`).
+Whichever `cns` wins the import wins it for the whole process, and a local
+package beats an installed one on the usual path order. So
+`src/cns/cns_integration.py` looks for `cns.gate` inside this repository,
+does not find it, and takes the fallback branch: `HAS_CNS` is False and the
+local implementations of `GateOutcome`, `subject_digest` and `resolve` are
+what actually run. Installing real CNS alongside does not change that. The
+fallback is a working implementation, so nothing is broken -- but "with CNS
+backend" currently means "with the local stand-ins", and the two are only
+as equivalent as they have been kept. Renaming one of the two packages is
+the fix, and which one to rename is a call nobody has made yet.
 
 ## Architecture
 

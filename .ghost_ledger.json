@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "totals": {
-    "runs": 3
+    "runs": 6
   },
   "runs": [
     {
@@ -93,6 +93,96 @@
         "found_remembered": 12,
         "scanned": 15
       }
+    },
+    {
+      "run_id": "2026-09-17T20:00:43+00:00:ac7bdf79e179",
+      "at": "2026-09-17T20:00:43+00:00",
+      "commit": "ac7bdf79e179b1fac11e67eff9a64ffd1de5545a",
+      "tool_version": "1.7.8",
+      "checks": {
+        "structural": "ran",
+        "mutate": "not_run",
+        "kernel": "not_run",
+        "boundary": "not_run",
+        "structure": "ran",
+        "branches": "ran",
+        "tests": "ran",
+        "project": "ran",
+        "secrets": "ran",
+        "correlate": "ran",
+        "ledger": "ran"
+      },
+      "records": {
+        "baseline": "absent",
+        "casefile": "absent"
+      },
+      "link": "e35f596a9cb758ec",
+      "counts": {
+        "found": 13,
+        "primary": 13,
+        "found_remembered": 13,
+        "scanned": 15
+      }
+    },
+    {
+      "run_id": "2026-09-17T20:00:49+00:00:ac7bdf79e179",
+      "at": "2026-09-17T20:00:49+00:00",
+      "commit": "ac7bdf79e179b1fac11e67eff9a64ffd1de5545a",
+      "tool_version": "1.7.8",
+      "checks": {
+        "structural": "ran",
+        "mutate": "not_run",
+        "kernel": "not_run",
+        "boundary": "not_run",
+        "structure": "ran",
+        "branches": "ran",
+        "tests": "ran",
+        "project": "ran",
+        "secrets": "ran",
+        "correlate": "ran",
+        "ledger": "ran"
+      },
+      "records": {
+        "baseline": "absent",
+        "casefile": "absent"
+      },
+      "link": "1d22a031868f833b",
+      "counts": {
+        "found": 13,
+        "primary": 13,
+        "found_remembered": 13,
+        "scanned": 15
+      }
+    },
+    {
+      "run_id": "2026-09-17T20:03:27+00:00:ac7bdf79e179",
+      "at": "2026-09-17T20:03:27+00:00",
+      "commit": "ac7bdf79e179b1fac11e67eff9a64ffd1de5545a",
+      "tool_version": "1.7.8",
+      "checks": {
+        "structural": "ran",
+        "mutate": "not_run",
+        "kernel": "not_run",
+        "boundary": "not_run",
+        "structure": "ran",
+        "branches": "ran",
+        "tests": "ran",
+        "project": "ran",
+        "secrets": "ran",
+        "correlate": "ran",
+        "ledger": "ran"
+      },
+      "records": {
+        "baseline": "absent",
+        "casefile": "absent"
+      },
+      "link": "bb5337fa3c470532",
+      "counts": {
+        "found": 12,
+        "primary": 12,
+        "found_remembered": 12,
+        "scanned": 15
+      }
     }
   ],
   "findings": {
@@ -104,12 +194,12 @@
       "severity": "major",
       "first_seen": "2026-09-17T19:54:29+00:00",
       "first_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
-      "last_seen": "2026-09-17T19:54:29+00:00",
-      "last_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
-      "runs_seen": 1,
-      "consecutive": 1,
+      "last_seen": "2026-09-17T20:00:49+00:00",
+      "last_commit": "ac7bdf79e179b1fac11e67eff9a64ffd1de5545a",
+      "runs_seen": 3,
+      "consecutive": 0,
       "returns": 0,
-      "absent_last_run": false,
+      "absent_last_run": true,
       "dispositions": []
     },
     "ghost-146e1f82f3a5": {
@@ -120,10 +210,10 @@
       "severity": "minor",
       "first_seen": "2026-09-17T19:53:54+00:00",
       "first_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
-      "last_seen": "2026-09-17T19:54:29+00:00",
-      "last_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
-      "runs_seen": 3,
-      "consecutive": 3,
+      "last_seen": "2026-09-17T20:03:27+00:00",
+      "last_commit": "ac7bdf79e179b1fac11e67eff9a64ffd1de5545a",
+      "runs_seen": 6,
+      "consecutive": 6,
       "returns": 0,
       "absent_last_run": false,
       "dispositions": []
@@ -136,10 +226,10 @@
       "severity": "minor",
       "first_seen": "2026-09-17T19:53:54+00:00",
       "first_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
-      "last_seen": "2026-09-17T19:54:29+00:00",
-      "last_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
-      "runs_seen": 3,
-      "consecutive": 3,
+      "last_seen": "2026-09-17T20:03:27+00:00",
+      "last_commit": "ac7bdf79e179b1fac11e67eff9a64ffd1de5545a",
+      "runs_seen": 6,
+      "consecutive": 6,
       "returns": 0,
       "absent_last_run": false,
       "dispositions": []
@@ -152,12 +242,12 @@
       "severity": "minor",
       "first_seen": "2026-09-17T19:53:54+00:00",
       "first_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
-      "last_seen": "2026-09-17T19:54:29+00:00",
-      "last_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
-      "runs_seen": 3,
-      "consecutive": 3,
+      "last_seen": "2026-09-17T20:00:49+00:00",
+      "last_commit": "ac7bdf79e179b1fac11e67eff9a64ffd1de5545a",
+      "runs_seen": 5,
+      "consecutive": 0,
       "returns": 0,
-      "absent_last_run": false,
+      "absent_last_run": true,
       "dispositions": []
     },
     "ghost-4349b08063f2": {
@@ -168,8 +258,24 @@
       "severity": "minor",
       "first_seen": "2026-09-17T19:53:54+00:00",
       "first_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
-      "last_seen": "2026-09-17T19:54:29+00:00",
-      "last_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
+      "last_seen": "2026-09-17T20:03:27+00:00",
+      "last_commit": "ac7bdf79e179b1fac11e67eff9a64ffd1de5545a",
+      "runs_seen": 6,
+      "consecutive": 6,
+      "returns": 0,
+      "absent_last_run": false,
+      "dispositions": []
+    },
+    "ghost-456f374c1873": {
+      "detector": "unmerged_branch",
+      "file": ".git/refs/heads/claude/ghost-tools-composite-engine-ugi8yp",
+      "summary": "branch 'claude/ghost-tools-composite-engine-ugi8yp' has commits not reflected in 'origin/main'",
+      "renamed_from": "",
+      "severity": "major",
+      "first_seen": "2026-09-17T20:00:43+00:00",
+      "first_commit": "ac7bdf79e179b1fac11e67eff9a64ffd1de5545a",
+      "last_seen": "2026-09-17T20:03:27+00:00",
+      "last_commit": "ac7bdf79e179b1fac11e67eff9a64ffd1de5545a",
       "runs_seen": 3,
       "consecutive": 3,
       "returns": 0,
@@ -184,10 +290,10 @@
       "severity": "minor",
       "first_seen": "2026-09-17T19:53:54+00:00",
       "first_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
-      "last_seen": "2026-09-17T19:54:29+00:00",
-      "last_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
-      "runs_seen": 3,
-      "consecutive": 3,
+      "last_seen": "2026-09-17T20:03:27+00:00",
+      "last_commit": "ac7bdf79e179b1fac11e67eff9a64ffd1de5545a",
+      "runs_seen": 6,
+      "consecutive": 6,
       "returns": 0,
       "absent_last_run": false,
       "dispositions": []
@@ -200,10 +306,10 @@
       "severity": "minor",
       "first_seen": "2026-09-17T19:53:54+00:00",
       "first_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
-      "last_seen": "2026-09-17T19:54:29+00:00",
-      "last_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
-      "runs_seen": 3,
-      "consecutive": 3,
+      "last_seen": "2026-09-17T20:03:27+00:00",
+      "last_commit": "ac7bdf79e179b1fac11e67eff9a64ffd1de5545a",
+      "runs_seen": 6,
+      "consecutive": 6,
       "returns": 0,
       "absent_last_run": false,
       "dispositions": []
@@ -216,10 +322,10 @@
       "severity": "major",
       "first_seen": "2026-09-17T19:53:54+00:00",
       "first_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
-      "last_seen": "2026-09-17T19:54:29+00:00",
-      "last_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
-      "runs_seen": 3,
-      "consecutive": 3,
+      "last_seen": "2026-09-17T20:03:27+00:00",
+      "last_commit": "ac7bdf79e179b1fac11e67eff9a64ffd1de5545a",
+      "runs_seen": 6,
+      "consecutive": 6,
       "returns": 0,
       "absent_last_run": false,
       "dispositions": []
@@ -232,10 +338,10 @@
       "severity": "minor",
       "first_seen": "2026-09-17T19:53:54+00:00",
       "first_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
-      "last_seen": "2026-09-17T19:54:29+00:00",
-      "last_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
-      "runs_seen": 3,
-      "consecutive": 3,
+      "last_seen": "2026-09-17T20:03:27+00:00",
+      "last_commit": "ac7bdf79e179b1fac11e67eff9a64ffd1de5545a",
+      "runs_seen": 6,
+      "consecutive": 6,
       "returns": 0,
       "absent_last_run": false,
       "dispositions": []
@@ -248,10 +354,10 @@
       "severity": "minor",
       "first_seen": "2026-09-17T19:53:54+00:00",
       "first_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
-      "last_seen": "2026-09-17T19:54:29+00:00",
-      "last_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
-      "runs_seen": 3,
-      "consecutive": 3,
+      "last_seen": "2026-09-17T20:03:27+00:00",
+      "last_commit": "ac7bdf79e179b1fac11e67eff9a64ffd1de5545a",
+      "runs_seen": 6,
+      "consecutive": 6,
       "returns": 0,
       "absent_last_run": false,
       "dispositions": []
@@ -264,10 +370,26 @@
       "severity": "minor",
       "first_seen": "2026-09-17T19:53:54+00:00",
       "first_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
-      "last_seen": "2026-09-17T19:54:29+00:00",
-      "last_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
-      "runs_seen": 3,
-      "consecutive": 3,
+      "last_seen": "2026-09-17T20:03:27+00:00",
+      "last_commit": "ac7bdf79e179b1fac11e67eff9a64ffd1de5545a",
+      "runs_seen": 6,
+      "consecutive": 6,
+      "returns": 0,
+      "absent_last_run": false,
+      "dispositions": []
+    },
+    "ghost-cd1ce4c7661a": {
+      "detector": "structure",
+      "file": "pyproject.toml",
+      "summary": "undeclared dependency: 'cns' (distribution 'composition-engine') is imported by 1 module(s) and appears in no dependency declaration",
+      "renamed_from": "",
+      "severity": "major",
+      "first_seen": "2026-09-17T20:03:27+00:00",
+      "first_commit": "ac7bdf79e179b1fac11e67eff9a64ffd1de5545a",
+      "last_seen": "2026-09-17T20:03:27+00:00",
+      "last_commit": "ac7bdf79e179b1fac11e67eff9a64ffd1de5545a",
+      "runs_seen": 1,
+      "consecutive": 1,
       "returns": 0,
       "absent_last_run": false,
       "dispositions": []
@@ -280,10 +402,10 @@
       "severity": "minor",
       "first_seen": "2026-09-17T19:53:54+00:00",
       "first_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
-      "last_seen": "2026-09-17T19:54:29+00:00",
-      "last_commit": "3e623ec84caa01e9b46d8e130a0d2e381b88c385",
-      "runs_seen": 3,
-      "consecutive": 3,
+      "last_seen": "2026-09-17T20:03:27+00:00",
+      "last_commit": "ac7bdf79e179b1fac11e67eff9a64ffd1de5545a",
+      "runs_seen": 6,
+      "consecutive": 6,
       "returns": 0,
       "absent_last_run": false,
       "dispositions": []
