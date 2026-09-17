@@ -6,6 +6,13 @@ from typing import Any, Dict, Optional
 
 from .core import SystemAdapter
 from .cns_backend import create_cns_composer
+from .outcomes import (
+    GhostToolsSeverity,
+    GhostToolsStatus,
+    InnovationOSDecision,
+    SwizzleVerdict,
+    WizzleForensics,
+)
 
 
 class SwizzleAdapter(SystemAdapter):
@@ -29,9 +36,9 @@ class SwizzleAdapter(SystemAdapter):
     ) -> str:
         """Execute SWIZZLE test suite on subject."""
         if input_outcome == "retry":
-            return "banished"
+            return SwizzleVerdict.BANISHED
         else:
-            return "escaped"
+            return SwizzleVerdict.ESCAPED
 
 
 class GhostToolsAdapter(SystemAdapter):
@@ -50,10 +57,10 @@ class GhostToolsAdapter(SystemAdapter):
         input_outcome: Optional[str] = None,
     ) -> str:
         """Scan subject for security findings."""
-        if input_outcome == "escaped":
-            return "confirmed"
+        if input_outcome == SwizzleVerdict.ESCAPED:
+            return GhostToolsStatus.CONFIRMED
         else:
-            return "reasoned"
+            return GhostToolsStatus.REASONED
 
 
 class WizzleAdapter(SystemAdapter):
@@ -75,10 +82,10 @@ class WizzleAdapter(SystemAdapter):
         input_outcome: Optional[str] = None,
     ) -> str:
         """Verify forensics correctness against ghost_tools findings."""
-        if input_outcome == "confirmed":
-            return "removed_from_library"
+        if input_outcome == GhostToolsStatus.CONFIRMED:
+            return WizzleForensics.REMOVED_FROM_LIBRARY
         else:
-            return "unknown"
+            return WizzleForensics.UNKNOWN
 
 
 class InnovationOSAdapter(SystemAdapter):
@@ -106,13 +113,13 @@ class InnovationOSAdapter(SystemAdapter):
     ) -> str:
         """Produce governance decision based on input evidence."""
         if input_outcome is None:
-            return "proposed"
-        elif input_outcome in ("banished", "dismissed", "confirmed"):
-            return "approved"
-        elif input_outcome in ("escaped", "conjured", "reasoned"):
-            return "rejected"
+            return InnovationOSDecision.PROPOSED
+        elif input_outcome in (SwizzleVerdict.BANISHED, SwizzleVerdict.DISMISSED, GhostToolsStatus.CONFIRMED):
+            return InnovationOSDecision.APPROVED
+        elif input_outcome in (SwizzleVerdict.ESCAPED, SwizzleVerdict.CONJURED, GhostToolsStatus.REASONED):
+            return InnovationOSDecision.REJECTED
         else:
-            return "branched"
+            return InnovationOSDecision.BRANCHED
 
 
 def register_cns_adapters(composer):
@@ -127,12 +134,12 @@ def register_cns_translation_rules(composer):
     """Register translation rules between CNS outcome models."""
     # Verdict → Decision
     def verdict_to_decision(verdict: str) -> str:
-        if verdict in ("banished", "dismissed"):
-            return "approved"
-        elif verdict in ("escaped", "conjured", "misnamed"):
-            return "rejected"
+        if verdict in (SwizzleVerdict.BANISHED, SwizzleVerdict.DISMISSED):
+            return InnovationOSDecision.APPROVED
+        elif verdict in (SwizzleVerdict.ESCAPED, SwizzleVerdict.CONJURED, SwizzleVerdict.MISNAMED):
+            return InnovationOSDecision.REJECTED
         else:
-            return "branched"
+            return InnovationOSDecision.BRANCHED
 
     composer.register_translation(
         "swizzle_verdict",
@@ -142,14 +149,14 @@ def register_cns_translation_rules(composer):
 
     # Status → Decision
     def status_to_decision(status: str) -> str:
-        if status == "confirmed":
-            return "approved"
-        elif status == "reasoned":
-            return "branched"
-        elif status == "rejected":
-            return "rejected"
+        if status == GhostToolsStatus.CONFIRMED:
+            return InnovationOSDecision.APPROVED
+        elif status == GhostToolsStatus.REASONED:
+            return InnovationOSDecision.BRANCHED
+        elif status == GhostToolsStatus.REJECTED:
+            return InnovationOSDecision.REJECTED
         else:
-            return "branched"
+            return InnovationOSDecision.BRANCHED
 
     composer.register_translation(
         "ghost_tools_status",
@@ -159,14 +166,14 @@ def register_cns_translation_rules(composer):
 
     # Forensics → Decision
     def forensics_to_decision(forensics: str) -> str:
-        if forensics in ("relocated_to_tests", "intentional_removal"):
-            return "approved"
-        elif forensics == "removed_from_library":
-            return "rejected"
-        elif forensics == "regression":
-            return "rejected"
+        if forensics in (WizzleForensics.RELOCATED_TO_TESTS, WizzleForensics.INTENTIONAL_REMOVAL):
+            return InnovationOSDecision.APPROVED
+        elif forensics == WizzleForensics.REMOVED_FROM_LIBRARY:
+            return InnovationOSDecision.REJECTED
+        elif forensics == WizzleForensics.REGRESSION:
+            return InnovationOSDecision.REJECTED
         else:
-            return "branched"
+            return InnovationOSDecision.BRANCHED
 
     composer.register_translation(
         "wizzle_forensics",
@@ -176,9 +183,9 @@ def register_cns_translation_rules(composer):
 
     # Decision → Gate
     def decision_to_gate(decision: str) -> str:
-        if decision == "approved":
+        if decision == InnovationOSDecision.APPROVED:
             return "pass"
-        elif decision == "rejected":
+        elif decision == InnovationOSDecision.REJECTED:
             return "terminal_breach"
         else:
             return "retry"

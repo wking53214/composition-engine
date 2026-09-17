@@ -9,6 +9,13 @@ from __future__ import annotations
 from typing import Any, Dict, Optional, Set
 
 from .compose_library import SystemAdapter, SystemModel
+from .outcomes import (
+    GhostToolsSeverity,
+    GhostToolsStatus,
+    InnovationOSDecision,
+    SwizzleVerdict,
+    WizzleForensics,
+)
 
 
 class SwizzleAdapter(SystemAdapter):
@@ -44,10 +51,10 @@ class SwizzleAdapter(SystemAdapter):
 
         if input_outcome == "retry":
             # Retest after fix
-            return "banished"  # defect was fixed; no longer found
+            return SwizzleVerdict.BANISHED  # defect was fixed; no longer found
         else:
             # Initial test
-            return "escaped"  # defect found but not by our planted test
+            return SwizzleVerdict.ESCAPED  # defect found but not by our planted test
 
 
 class GhostToolsAdapter(SystemAdapter):
@@ -86,12 +93,12 @@ class GhostToolsAdapter(SystemAdapter):
         # In real execution, this invokes ghost_buster.cli or mechanical scanner
         # For now, placeholder
 
-        if input_outcome == "escaped":
+        if input_outcome == SwizzleVerdict.ESCAPED:
             # SWIZZLE found a defect; ghost_tools confirms it
-            return "confirmed"
+            return GhostToolsStatus.CONFIRMED
         else:
             # Independent scan
-            return "reasoned"  # finding needs human review
+            return GhostToolsStatus.REASONED  # finding needs human review
 
 
 class WizzleAdapter(SystemAdapter):
@@ -128,11 +135,11 @@ class WizzleAdapter(SystemAdapter):
         # Checking git history, commit messages, and semantic context
         # For now, placeholder
 
-        if input_outcome == "confirmed":
+        if input_outcome == GhostToolsStatus.CONFIRMED:
             # Finding is confirmed; check if it's intentional or regression
-            return "removed_from_library"  # member was intentionally removed from production
+            return WizzleForensics.REMOVED_FROM_LIBRARY  # member was intentionally removed from production
         else:
-            return "unknown"  # need more context
+            return WizzleForensics.UNKNOWN  # need more context
 
 
 class InnovationOSAdapter(SystemAdapter):
@@ -175,16 +182,16 @@ class InnovationOSAdapter(SystemAdapter):
 
         if input_outcome is None:
             # No prior evidence; propose for evaluation
-            return "proposed"
-        elif input_outcome in ("banished", "dismissed", "confirmed"):
+            return InnovationOSDecision.PROPOSED
+        elif input_outcome in (SwizzleVerdict.BANISHED, SwizzleVerdict.DISMISSED, GhostToolsStatus.CONFIRMED):
             # Evidence supports approval
-            return "approved"
-        elif input_outcome in ("escaped", "conjured", "reasoned"):
+            return InnovationOSDecision.APPROVED
+        elif input_outcome in (SwizzleVerdict.ESCAPED, SwizzleVerdict.CONJURED, GhostToolsStatus.REASONED):
             # Evidence supports rejection or alternative path
-            return "rejected"
+            return InnovationOSDecision.REJECTED
         else:
             # Uncertain; need more information
-            return "branched"
+            return InnovationOSDecision.BRANCHED
 
 
 def register_core_adapters(composer: Any) -> None:
@@ -207,12 +214,12 @@ def register_core_translation_rules(composer: Any) -> None:
     """
     # SWIZZLE → Innovation OS
     def translate_verdict_to_decision(verdict: str) -> str:
-        if verdict in ("banished", "dismissed"):
-            return "approved"
-        elif verdict in ("escaped", "conjured", "misnamed"):
-            return "rejected"
+        if verdict in (SwizzleVerdict.BANISHED, SwizzleVerdict.DISMISSED):
+            return InnovationOSDecision.APPROVED
+        elif verdict in (SwizzleVerdict.ESCAPED, SwizzleVerdict.CONJURED, SwizzleVerdict.MISNAMED):
+            return InnovationOSDecision.REJECTED
         else:
-            return "branched"
+            return InnovationOSDecision.BRANCHED
 
     composer.register_translation(
         SystemModel.SWIZZLE_VERDICT,
@@ -222,14 +229,14 @@ def register_core_translation_rules(composer: Any) -> None:
 
     # ghost_tools Status → Innovation OS Decision
     def translate_status_to_decision(status: str) -> str:
-        if status == "confirmed":
-            return "approved"
-        elif status == "reasoned":
-            return "branched"
-        elif status == "rejected":
-            return "rejected"
+        if status == GhostToolsStatus.CONFIRMED:
+            return InnovationOSDecision.APPROVED
+        elif status == GhostToolsStatus.REASONED:
+            return InnovationOSDecision.BRANCHED
+        elif status == GhostToolsStatus.REJECTED:
+            return InnovationOSDecision.REJECTED
         else:
-            return "branched"
+            return InnovationOSDecision.BRANCHED
 
     composer.register_translation(
         SystemModel.GHOST_TOOLS_STATUS,
@@ -239,14 +246,14 @@ def register_core_translation_rules(composer: Any) -> None:
 
     # WIZZLE Forensics → Innovation OS Decision
     def translate_forensics_to_decision(forensics: str) -> str:
-        if forensics in ("relocated_to_tests", "intentional_removal"):
-            return "approved"
-        elif forensics == "removed_from_library":
-            return "rejected"
-        elif forensics == "regression":
-            return "rejected"
+        if forensics in (WizzleForensics.RELOCATED_TO_TESTS, WizzleForensics.INTENTIONAL_REMOVAL):
+            return InnovationOSDecision.APPROVED
+        elif forensics == WizzleForensics.REMOVED_FROM_LIBRARY:
+            return InnovationOSDecision.REJECTED
+        elif forensics == WizzleForensics.REGRESSION:
+            return InnovationOSDecision.REJECTED
         else:
-            return "branched"
+            return InnovationOSDecision.BRANCHED
 
     composer.register_translation(
         SystemModel.WIZZLE_FORENSICS,
@@ -256,9 +263,9 @@ def register_core_translation_rules(composer: Any) -> None:
 
     # All → CNS Gate Outcome (canonical)
     def translate_decision_to_gate(decision: str) -> str:
-        if decision == "approved":
+        if decision == InnovationOSDecision.APPROVED:
             return "pass"
-        elif decision == "rejected":
+        elif decision == InnovationOSDecision.REJECTED:
             return "terminal_breach"
         else:
             return "retry"
