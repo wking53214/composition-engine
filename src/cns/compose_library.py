@@ -12,6 +12,16 @@ from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 from abc import ABC, abstractmethod
 
 from .cns_integration import GateOutcome, subject_digest
+from .outcomes import (
+    GhostToolsSeverity,
+    GhostToolsStatus,
+    InnovationOSDecision,
+    SwizzleVerdict,
+    WizzleForensics,
+    is_declared,
+    outcome_value,
+    vocabulary_for,
+)
 
 
 class SystemModel(str, Enum):
@@ -89,11 +99,92 @@ class CompositionTrace:
         """Human-readable timeline."""
         lines = [f"Cycle {self.cycle}: {' → '.join(self.composition_path)}"]
         for i, step in enumerate(self.steps, 1):
-            inp = f" ← {step.input_outcome}" if step.input_outcome else ""
-            out = f" → {step.output_outcome}" if step.output_outcome else ""
-            lines.append(f"  {i}. {step.system_name}{inp}{out}")
+            # outcome_value, not the bare member: f-string formatting of a
+            # str-Enum prints "SwizzleVerdict.ESCAPED" where this timeline has
+            # always printed "escaped". Nothing asserts on this text, so the
+            # change would have shipped silently.
+            inp = f" ← {outcome_value(step.input_outcome)}" if step.input_outcome else ""
+            out = f" → {outcome_value(step.output_outcome)}" if step.output_outcome else ""
+            # Marked in the timeline rather than only in metadata, because a
+            # flag nobody prints is indistinguishable from a check nobody ran.
+            flag = (
+                "  [!] not in this system's declared vocabulary"
+                if step.metadata.get("outcome_declared") is False
+                else ""
+            )
+            lines.append(f"  {i}. {step.system_name}{inp}{out}{flag}")
         lines.append(f"  Final: {self.overall_outcome.value}")
         return "\n".join(lines)
+
+
+# How each system's words become the canonical gate outcome.
+#
+# This was four near-identical branch cascades inside `_canonicalize`, one per
+# outcome model, each mapping a handful of values and falling through to a
+# default. ghost_buster read it as one statement repeated four times in one
+# function (ghost-0f0192120c82, MAJOR) and it was right: the branches were the
+# same operation written out once per model, which is what a table is for.
+#
+# Each entry is (mapping, default). The default is the outcome for a value the
+# mapping does not list, and it is NOT uniform: an unrecognised canonical
+# outcome is a TERMINAL_BREACH, because a gate that cannot read its own
+# vocabulary has failed rather than merely not-yet-decided, while every other
+# model treats an unlisted value as RETRY. That asymmetry was already in the
+# cascade, as CNS_GATE_OUTCOME's silent fall-through past the end of its own
+# branch to the function's final return, where it read as an oversight. It is
+# preserved here deliberately and written down.
+CANONICAL_TABLE: Dict[SystemModel, Tuple[Dict[str, GateOutcome], GateOutcome]] = {
+    SystemModel.CNS_GATE_OUTCOME: (
+        {
+            GateOutcome.PASS.value: GateOutcome.PASS,
+            GateOutcome.TERMINAL_BREACH.value: GateOutcome.TERMINAL_BREACH,
+            GateOutcome.RETRY.value: GateOutcome.RETRY,
+        },
+        GateOutcome.TERMINAL_BREACH,
+    ),
+    SystemModel.SWIZZLE_VERDICT: (
+        {
+            SwizzleVerdict.BANISHED: GateOutcome.PASS,
+            SwizzleVerdict.DISMISSED: GateOutcome.PASS,
+            SwizzleVerdict.ESCAPED: GateOutcome.TERMINAL_BREACH,
+            SwizzleVerdict.CONJURED: GateOutcome.TERMINAL_BREACH,
+        },
+        GateOutcome.RETRY,
+    ),
+    SystemModel.GHOST_TOOLS_STATUS: (
+        {
+            GhostToolsStatus.CONFIRMED: GateOutcome.PASS,
+            GhostToolsStatus.REASONED: GateOutcome.TERMINAL_BREACH,
+            GhostToolsStatus.REJECTED: GateOutcome.TERMINAL_BREACH,
+        },
+        GateOutcome.RETRY,
+    ),
+    SystemModel.GHOST_TOOLS_SEVERITY: (
+        {
+            GhostToolsSeverity.CRITICAL: GateOutcome.TERMINAL_BREACH,
+            GhostToolsSeverity.MAJOR: GateOutcome.TERMINAL_BREACH,
+            GhostToolsSeverity.MINOR: GateOutcome.PASS,
+            GhostToolsSeverity.INFORMATIONAL: GateOutcome.PASS,
+        },
+        GateOutcome.RETRY,
+    ),
+    SystemModel.WIZZLE_FORENSICS: (
+        {
+            WizzleForensics.RELOCATED_TO_TESTS: GateOutcome.PASS,
+            WizzleForensics.INTENTIONAL_REMOVAL: GateOutcome.PASS,
+            WizzleForensics.REMOVED_FROM_LIBRARY: GateOutcome.TERMINAL_BREACH,
+            WizzleForensics.REGRESSION: GateOutcome.TERMINAL_BREACH,
+        },
+        GateOutcome.RETRY,
+    ),
+    SystemModel.INNOVATION_OS_DECISION: (
+        {
+            InnovationOSDecision.APPROVED: GateOutcome.PASS,
+            InnovationOSDecision.REJECTED: GateOutcome.TERMINAL_BREACH,
+        },
+        GateOutcome.RETRY,
+    ),
+}
 
 
 class LibraryComposer:
@@ -214,12 +305,15 @@ class LibraryComposer:
             # Invoke system
             outcome = adapter.invoke(subject, input_outcome=incoming)
 
+            declared = self._check_vocabulary(adapter.output_model, outcome)
+
             step = CompositionStep(
                 system_name=system_name,
                 input_outcome=incoming,
                 output_outcome=outcome,
                 output_model=adapter.output_model,
                 subject_hash=subject_hash,
+                metadata={"outcome_declared": declared},
             )
             steps.append(step)
             previous_outcome = outcome
@@ -235,6 +329,23 @@ class LibraryComposer:
             cycle=cycle,
             converged=converged,
         )
+
+    @staticmethod
+    def _check_vocabulary(model: SystemModel, outcome: str) -> Optional[bool]:
+        """Is this outcome one of the words its system declared?
+
+        None, not False, when the model has no vocabulary to check against:
+        CNS_GATE_OUTCOME is canonical and owned by GateOutcome, and "nothing
+        declared this" is a different statement from "this is not declared".
+
+        Recorded rather than raised. A composition that reached a
+        wrong-vocabulary outcome still has a trace worth reading, and an
+        exception here would destroy the step that produced it along with
+        every step before it.
+        """
+        if not vocabulary_for(model):
+            return None
+        return is_declared(model, outcome)
 
     def _translate(
         self,
@@ -254,64 +365,10 @@ class LibraryComposer:
         outcome = final_step.output_outcome or "unknown"
         model = final_step.output_model
 
-        # Already canonical
-        if model == SystemModel.CNS_GATE_OUTCOME:
-            if outcome == "pass":
-                return GateOutcome.PASS
-            elif outcome == "terminal_breach":
-                return GateOutcome.TERMINAL_BREACH
-            elif outcome == "retry":
-                return GateOutcome.RETRY
-
-        # SWIZZLE verdicts
-        elif model == SystemModel.SWIZZLE_VERDICT:
-            if outcome in ("banished", "dismissed"):
-                return GateOutcome.PASS
-            elif outcome in ("escaped", "conjured"):
-                return GateOutcome.TERMINAL_BREACH
-            else:
-                return GateOutcome.RETRY
-
-        # ghost_tools status
-        elif model == SystemModel.GHOST_TOOLS_STATUS:
-            if outcome == "confirmed":
-                return GateOutcome.PASS
-            elif outcome in ("reasoned", "rejected"):
-                return GateOutcome.TERMINAL_BREACH
-            else:
-                return GateOutcome.RETRY
-
-        # ghost_tools severity (meta)
-        elif model == SystemModel.GHOST_TOOLS_SEVERITY:
-            if outcome == "critical":
-                return GateOutcome.TERMINAL_BREACH
-            elif outcome == "major":
-                return GateOutcome.TERMINAL_BREACH
-            elif outcome in ("minor", "informational"):
-                return GateOutcome.PASS
-            else:
-                return GateOutcome.RETRY
-
-        # WIZZLE forensics
-        elif model == SystemModel.WIZZLE_FORENSICS:
-            if outcome in ("relocated_to_tests", "intentional_removal"):
-                return GateOutcome.PASS
-            elif outcome in ("removed_from_library", "regression"):
-                return GateOutcome.TERMINAL_BREACH
-            else:
-                return GateOutcome.RETRY
-
-        # Innovation OS decisions
-        elif model == SystemModel.INNOVATION_OS_DECISION:
-            if outcome == "approved":
-                return GateOutcome.PASS
-            elif outcome == "rejected":
-                return GateOutcome.TERMINAL_BREACH
-            else:
-                return GateOutcome.RETRY
-
-        # Fallback
-        return GateOutcome.TERMINAL_BREACH
+        mapping, default = CANONICAL_TABLE.get(
+            model, ({}, GateOutcome.TERMINAL_BREACH)
+        )
+        return mapping.get(outcome, default)
 
     def _check_convergence(self, steps: List[CompositionStep]) -> bool:
         """Did composition converge to a decision?"""
