@@ -202,21 +202,25 @@ class UniversalComposer:
         for system_name in composition_path:
             adapter = self.adapters[system_name]
 
-            # Invoke system
-            outcome = adapter.invoke(subject, input_outcome=previous_outcome)
-
-            # Translate if needed
-            if previous_outcome and steps:
+            # Translate the INCOMING outcome into a model this adapter accepts,
+            # before invoking it. Non-destructive and deterministic: input_models
+            # is a standing declaration, and set order is not stable.
+            incoming = previous_outcome
+            if incoming is not None and steps:
                 from_model = steps[-1].output_model
-                to_model = adapter.input_models.pop() if adapter.input_models else None
-                if from_model and to_model and from_model != to_model:
-                    rule = self.translation_rules.get((from_model, to_model))
-                    if rule:
-                        outcome = rule(outcome)
+                if from_model not in adapter.input_models:
+                    for to_model in sorted(adapter.input_models, key=str):
+                        rule = self.translation_rules.get((from_model, to_model))
+                        if rule:
+                            incoming = rule(incoming)
+                            break
+
+            # Invoke system
+            outcome = adapter.invoke(subject, input_outcome=incoming)
 
             step = CompositionStep(
                 system_name=system_name,
-                input_outcome=previous_outcome,
+                input_outcome=incoming,
                 output_outcome=outcome,
                 output_model=adapter.output_model,
                 subject_hash=subject_hash,
