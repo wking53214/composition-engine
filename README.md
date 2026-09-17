@@ -19,7 +19,7 @@
 
 ```bash
 pip install -e ".[dev]"   # editable, with pytest
-pytest -q                 # 25 tests
+pytest -q
 ```
 
 The package is `cns` and lives at `src/cns`. `pytest` alone works in a
@@ -263,11 +263,10 @@ else:
 ## Testing
 
 ```bash
-cd /home/user/composition-engine
-python -m pytest tests/test_library_composition.py -v
+python -m pytest -v
 ```
 
-All 21 tests passing:
+The suite covers:
 - ✅ Adapter registration
 - ✅ Compatibility graph building
 - ✅ Path finding (BFS)
@@ -276,6 +275,34 @@ All 21 tests passing:
 - ✅ Convergence detection
 - ✅ Translation rules
 - ✅ Fluent API
+- ✅ Declared outcome vocabularies, and outcomes that fall outside them
+- ✅ Canonicalization for every model, including its asymmetric default
+
+## Outcome vocabularies
+
+Each system answers in its own words, and the words are declared in
+`src/cns/outcomes.py`: `SwizzleVerdict`, `GhostToolsStatus`,
+`GhostToolsSeverity`, `WizzleForensics`, `InnovationOSDecision`. They are
+`str` enums, the same shape as `GateOutcome`, so `SwizzleVerdict.BANISHED ==
+"banished"` and every existing caller keeps working.
+
+`compose()` checks each adapter's answer against the vocabulary that adapter
+declared and records the verdict on the step, `True`, `False`, or `None` when
+the model declares no vocabulary. An answer outside the vocabulary is marked
+in `timeline()` rather than raised, because a trace that went wrong is still
+a trace worth reading:
+
+```
+  1. rogue → banisheddd  [!] not in this system's declared vocabulary
+```
+
+Two caveats worth knowing. `str()` on a `str`-Enum member gives
+`"SwizzleVerdict.BANISHED"`, not `"banished"`, so use `outcome_value()` when
+formatting or dict-keying one; equality and JSON are unaffected. And most of
+each vocabulary is currently unproduced, because the adapters are
+placeholders returning fixed answers, so a scanner will report the unused
+members as unreachable declared state. That is accurate, and it will stop
+being true as the adapters become real.
 
 ## Scaling to Any Number of Systems
 
