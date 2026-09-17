@@ -11,7 +11,7 @@ from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 from abc import ABC, abstractmethod
 
-from .gate import GateOutcome, subject_digest
+from .cns_integration import GateOutcome, subject_digest
 
 
 class SystemModel(str, Enum):
