@@ -7,8 +7,8 @@ work correctly across all systems.
 
 import pytest
 
-from cns.compose_library import LibraryComposer, SystemModel
-from cns.adapters import (
+from composition_engine.compose_library import LibraryComposer, SystemModel
+from composition_engine.adapters import (
     register_core_adapters,
     register_core_translation_rules,
     SwizzleAdapter,
@@ -225,15 +225,25 @@ class TestTranslationRules:
         assert rule("unsummoned") == "branched"
 
     def test_status_to_decision_translation(self, composer):
-        """ghost_tools status translates to Innovation OS decision."""
+        """ghost_tools status translates to Innovation OS decision.
+
+        CONFIRMED/REJECTED were swapped from what this test asserted before:
+        CONFIRMED is a deterministic, proven finding and now rejects, while
+        REJECTED (reviewed, not real) and SUPPRESSED (real, but accepted)
+        both approve. See outcomes.py's CANONICAL_TABLE comment for the full
+        account; this is the one other place the same polarity was written
+        down, so it moved too.
+        """
         rule = composer.translation_rules.get(
             (SystemModel.GHOST_TOOLS_STATUS, SystemModel.INNOVATION_OS_DECISION)
         )
         assert rule is not None
 
-        assert rule("confirmed") == "approved"
+        assert rule("confirmed") == "rejected"
+        assert rule("confirmed_by_review") == "rejected"
         assert rule("reasoned") == "branched"
-        assert rule("rejected") == "rejected"
+        assert rule("rejected") == "approved"
+        assert rule("suppressed") == "approved"
 
     def test_decision_to_gate_translation(self, composer):
         """Innovation OS decision translates to CNS gate outcome."""
@@ -259,7 +269,7 @@ class TestCompositionBuilder:
 
     def test_builder_add_systems(self, composer):
         """Build composition fluently."""
-        from cns.compose_library import CompositionBuilder
+        from composition_engine.compose_library import CompositionBuilder
 
         builder = CompositionBuilder(composer)
         path = (
@@ -274,7 +284,7 @@ class TestCompositionBuilder:
 
     def test_builder_execute(self, composer):
         """Builder can execute composition directly."""
-        from cns.compose_library import CompositionBuilder
+        from composition_engine.compose_library import CompositionBuilder
 
         builder = CompositionBuilder(composer)
         subject = {"repo": "test_repo", "commit": "abc123"}
@@ -290,7 +300,7 @@ class TestCompositionBuilder:
 
     def test_builder_unknown_system_raises(self, composer):
         """Adding unknown system raises ValueError."""
-        from cns.compose_library import CompositionBuilder
+        from composition_engine.compose_library import CompositionBuilder
 
         builder = CompositionBuilder(composer)
         with pytest.raises(ValueError, match="System not registered"):

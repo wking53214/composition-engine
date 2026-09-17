@@ -7,7 +7,7 @@ The UniversalComposer enables any system to participate in composition chains by
 ### 1. Define Your Adapter
 
 ```python
-from src.cns.core import SystemAdapter
+from composition_engine.core import SystemAdapter
 
 class MySystemAdapter(SystemAdapter):
     def __init__(self):
@@ -26,7 +26,7 @@ class MySystemAdapter(SystemAdapter):
 ### 2. Register With Composer
 
 ```python
-from src.cns.core import UniversalComposer
+from composition_engine.core import UniversalComposer
 
 composer = UniversalComposer()
 composer.register_adapter(MySystemAdapter())
@@ -190,7 +190,7 @@ composer = UniversalComposer(converge_fn=my_converge)
 ## Example: Security Scanner System
 
 ```python
-from src.cns.core import SystemAdapter, UniversalComposer
+from composition_engine.core import SystemAdapter, UniversalComposer
 
 class SecurityScannerAdapter(SystemAdapter):
     """Scans code for security vulnerabilities."""
@@ -297,7 +297,7 @@ for cycle in range(1, 6):
 
 ```python
 import pytest
-from src.cns.core import UniversalComposer
+from composition_engine.core import UniversalComposer
 
 def test_my_adapter_accepts_correct_models():
     adapter = MySystemAdapter()

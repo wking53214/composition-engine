@@ -53,12 +53,24 @@ class CompositionStep:
     subject_hash: Optional[str] = None
 
 
+def _plain(x: Any) -> Any:
+    """The value a possibly-Enum outcome stands for, without importing Enum.
+
+    core.py has no CNS/domain dependency and never will, so it can't import
+    outcomes.py's `outcome_value` (same str-Enum trap: `str()` on a str-Enum
+    member prints "ClassName.MEMBER", not the value). Duck-typed on
+    `.value` instead, which every stdlib Enum has and a plain string does
+    not -- generic Python, not domain knowledge.
+    """
+    return getattr(x, "value", x)
+
+
 @dataclass(frozen=True)
 class CompositionTrace:
     """Full execution trace through systems."""
 
     steps: List[CompositionStep]
-    overall_outcome: Optional[str]
+    overall_outcome: Optional[Any]
     composition_path: List[str]
     cycle: int = 1
     converged: bool = False
@@ -67,11 +79,18 @@ class CompositionTrace:
         """Human-readable timeline."""
         lines = [f"Cycle {self.cycle}: {' → '.join(self.composition_path)}"]
         for i, step in enumerate(self.steps, 1):
-            inp = f" ← {step.input_outcome}" if step.input_outcome else ""
-            out = f" → {step.output_outcome}" if step.output_outcome else ""
-            lines.append(f"  {i}. {step.system_name}{inp}{out}")
+            inp = f" ← {_plain(step.input_outcome)}" if step.input_outcome else ""
+            out = f" → {_plain(step.output_outcome)}" if step.output_outcome else ""
+            # A generic warning slot, not a vocabulary check -- core.py
+            # doesn't know what a vocabulary is. A composer flavor that does
+            # (LibraryComposer, via its step_hook_fn) sets step.metadata
+            # ["warning"] and it surfaces here; core.py just prints it if
+            # present, same as it prints any other step.
+            warning = step.metadata.get("warning")
+            flag = f"  [!] {warning}" if warning else ""
+            lines.append(f"  {i}. {step.system_name}{inp}{out}{flag}")
         if self.overall_outcome:
-            lines.append(f"  Final: {self.overall_outcome}")
+            lines.append(f"  Final: {_plain(self.overall_outcome)}")
         lines.append(f"  Converged: {self.converged}")
         return "\n".join(lines)
 
@@ -91,6 +110,7 @@ class UniversalComposer:
         subject_digest_fn: Optional[Callable[[Dict[str, Any]], str]] = None,
         canonicalize_fn: Optional[Callable[[CompositionStep], str]] = None,
         converge_fn: Optional[Callable[[List[CompositionStep]], bool]] = None,
+        step_hook_fn: Optional[Callable[[SystemAdapter, Any], Dict[str, Any]]] = None,
     ):
         """Initialize composer with optional customization functions.
 
@@ -100,6 +120,16 @@ class UniversalComposer:
                 Default: None (use final step outcome as-is)
             converge_fn: Function to check if composition converged.
                 Default: None (always converged)
+            step_hook_fn: Called with (adapter, outcome) right after each
+                adapter is invoked, before its CompositionStep is built.
+                Returns a metadata dict merged into that step. Default: None
+                (no extra metadata). core.py never calls this for anything
+                domain-specific -- it exists so a composer flavor built on
+                top of UniversalComposer (see compose_library.LibraryComposer)
+                can attach its own per-step checks (a vocabulary check, say)
+                without UniversalComposer knowing what one is. The one thing
+                it's contracted to produce, if anything: a "warning" key
+                whose value CompositionTrace.timeline() will print.
         """
         self.adapters: Dict[str, SystemAdapter] = {}
         self.translation_rules: Dict[Tuple[str, str], Callable[[str], str]] = {}
@@ -107,6 +137,7 @@ class UniversalComposer:
         self.subject_digest_fn = subject_digest_fn or (lambda s: None)
         self.canonicalize_fn = canonicalize_fn or (lambda step: step.output_outcome)
         self.converge_fn = converge_fn or (lambda steps: True)
+        self.step_hook_fn = step_hook_fn
 
         self.graph: Dict[str, Set[str]] = {}
 
@@ -218,12 +249,15 @@ class UniversalComposer:
             # Invoke system
             outcome = adapter.invoke(subject, input_outcome=incoming)
 
+            extra_metadata = self.step_hook_fn(adapter, outcome) if self.step_hook_fn else {}
+
             step = CompositionStep(
                 system_name=system_name,
                 input_outcome=incoming,
                 output_outcome=outcome,
                 output_model=adapter.output_model,
                 subject_hash=subject_hash,
+                metadata=extra_metadata,
             )
             steps.append(step)
             previous_outcome = outcome

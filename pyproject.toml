@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "composition-engine"
+version = "0.1.0"
+description = "Universal system orchestrator: compose heterogeneous systems by declared outcome model, without a universal translator"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "William King" }]
+keywords = ["orchestration", "composition", "adapters", "outcome-model"]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/wking53214/composition-engine"
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+# src layout. The package is `composition_engine`, living at
+# src/composition_engine, so `import composition_engine` works the same way
+# for the test suite, the docs' examples and an installed copy.
+#
+# It was named `cns` through 7e35297. That collided with the external CNS
+# gate infrastructure this repo's cns_integration.py tries to import as
+# `cns.gate`: one name, one winner per process, and the local package always
+# won, so HAS_CNS could never be True no matter what was installed alongside
+# it. Renamed so `cns.gate` resolves to a real, separately-installed `cns` if
+# one is present -- see docs/CNS_INTEGRATION.md.
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["composition_engine*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# So a bare `pytest` works in a fresh checkout without `pip install -e .`
+# first. An installed copy resolves `composition_engine` the same way and
+# this entry is then redundant rather than conflicting.
+pythonpath = ["src"]

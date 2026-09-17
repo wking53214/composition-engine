@@ -15,12 +15,23 @@
 - Uses targeted translation rules only where models differ
 - No universal translator needed—linear scaling to any number of systems
 
+## Install
+
+```bash
+pip install -e ".[dev]"   # editable, with pytest
+pytest -q
+```
+
+The package is `composition_engine` and lives at `src/composition_engine`. `pytest` alone works in a
+fresh checkout without installing first, because `pyproject.toml` puts
+`src` on the test path.
+
 ## Quick Start
 
 ### Universal (No Dependencies)
 
 ```python
-from src.cns.core import UniversalComposer, SystemAdapter
+from composition_engine.core import UniversalComposer, SystemAdapter
 
 # Define a system adapter
 class MyAnalyzer(SystemAdapter):
@@ -45,8 +56,8 @@ print(trace.timeline())
 ### With CNS Backend
 
 ```python
-from src.cns.cns_backend import create_cns_composer
-from src.cns.adapters_cns import register_cns_adapters, register_cns_translation_rules
+from composition_engine.cns_backend import create_cns_composer
+from composition_engine.adapters_cns import register_cns_adapters, register_cns_translation_rules
 
 # Create CNS-configured composer (with subject binding, canonicalization, convergence)
 composer = create_cns_composer()
@@ -64,6 +75,19 @@ trace = composer.compose(
 print(f"Outcome: {trace.overall_outcome}")  # pass, retry, or terminal_breach
 print(f"Converged: {trace.converged}")
 ```
+
+**Name collision, fixed.** This repository's own package used to be named
+`cns`, the same name as the external CNS gate infrastructure it imports as
+`cns.gate`. One name, one winner per process, and the local package always
+won on the usual path order, so `cns_integration.py`'s `from cns.gate import
+...` looked inside this repository, found no `gate` module, and always took
+the fallback branch. `HAS_CNS` could never be `True` no matter what was
+installed alongside it. The package is now `composition_engine`
+(`src/composition_engine`), so `cns.gate` resolves to a real,
+separately-installed `cns` package when one is present, and to the local
+fallback when it isn't. Either way the fallback is a complete, working
+implementation of `GateOutcome`, `subject_digest` and `resolve` -- check
+`get_cns_status()` at runtime to see which one actually ran, don't assume.
 
 ## Architecture
 
@@ -158,12 +182,37 @@ composer.register_translation("verdict", "decision", translate_verdict_to_decisi
 
 | Path | Purpose |
 |------|---------|
-| `src/cns/core.py` | Universal orchestrator (system-agnostic) |
-| `src/cns/cns_backend.py` | CNS outcomes, subject binding, convergence |
-| `src/cns/adapters_cns.py` | SWIZZLE, ghost_tools, WIZZLE, Innovation OS |
-| `tests/test_library_composition.py` | 21 comprehensive tests |
+| `src/composition_engine/core.py` | Universal orchestrator (system-agnostic), used both bare and as the base LibraryComposer configures |
+| `src/composition_engine/outcomes.py` | The outcome vocabularies and `CANONICAL_TABLE` -- the one place either composer track reads what a word means |
+| `src/composition_engine/compose_library.py` | `LibraryComposer`: `UniversalComposer` pre-configured with `CANONICAL_TABLE` and a vocabulary check |
+| `src/composition_engine/cns_backend.py` | `create_cns_composer()`: `UniversalComposer` pre-configured the plain-string way, same table |
+| `src/composition_engine/adapters.py` | SWIZZLE, ghost_tools, WIZZLE, Innovation OS adapters (`adapters_cns.py` re-exports these under their older names) |
+| `tests/test_library_composition.py`, `tests/test_outcomes.py` | the test suite -- `pytest -q` for the count |
 | `docs/LIBRARY_COMPOSITION_GUIDE.md` | Complete guide (universality, scaling) |
 | `docs/CREATING_CUSTOM_ADAPTERS.md` | How to create adapters for any system |
+
+All four core adapters do real work when their tool is installed alongside
+this repo and their subject carries what that tool needs; an honest
+"couldn't tell" outcome otherwise, never a fabricated verdict. None of these
+are listed dependencies -- same optional-import shape as the CNS backend,
+for the same reason (no installable URL to declare them against, and CI
+never has any of them checked out, so it always exercises the fallback
+paths; the real paths are covered separately and skip automatically when
+unavailable):
+
+| Adapter | Real when | Needs |
+|---|---|---|
+| `SwizzleAdapter` | SWIZZLE installed (`pip install -e /path/to/SWIZZLE`) | `subject["ghost_tools_path"]` -- SWIZZLE red-teams a scanner, not a subject |
+| `GhostToolsAdapter` | ghost_tools installed | `subject["repo_path"]` (or a pre-computed `subject["findings"]`) |
+| `WizzleAdapter` | ghost_tools installed | `subject["repo_path"]`, `subject["enum"]`, `subject["member"]` |
+| `InnovationOSAdapter` | always -- there's no real Innovation OS to call, this is the governance judgment itself | nothing external |
+
+The four don't share one subject shape (see `register_core_adapters`'
+docstring for why not), so composing all four into one real four-system
+circle means passing a subject that carries all three of `ghost_tools_path`,
+`repo_path`, `enum` and `member` at once -- not the tidy `{"repo",
+"commit"}` the Quick Start example above uses, which is illustrative rather
+than a real four-adapter run.
 
 ## Usage Patterns
 
@@ -238,11 +287,10 @@ else:
 ## Testing
 
 ```bash
-cd /home/user/composition-engine
-python -m pytest tests/test_library_composition.py -v
+python -m pytest -v
 ```
 
-All 21 tests passing:
+The suite covers:
 - ✅ Adapter registration
 - ✅ Compatibility graph building
 - ✅ Path finding (BFS)
@@ -251,6 +299,34 @@ All 21 tests passing:
 - ✅ Convergence detection
 - ✅ Translation rules
 - ✅ Fluent API
+- ✅ Declared outcome vocabularies, and outcomes that fall outside them
+- ✅ Canonicalization for every model, including its asymmetric default
+
+## Outcome vocabularies
+
+Each system answers in its own words, and the words are declared in
+`src/composition_engine/outcomes.py`: `SwizzleVerdict`, `GhostToolsStatus`,
+`GhostToolsSeverity`, `WizzleForensics`, `InnovationOSDecision`. They are
+`str` enums, the same shape as `GateOutcome`, so `SwizzleVerdict.BANISHED ==
+"banished"` and every existing caller keeps working.
+
+`compose()` checks each adapter's answer against the vocabulary that adapter
+declared and records the verdict on the step, `True`, `False`, or `None` when
+the model declares no vocabulary. An answer outside the vocabulary is marked
+in `timeline()` rather than raised, because a trace that went wrong is still
+a trace worth reading:
+
+```
+  1. rogue → banisheddd  [!] not in this system's declared vocabulary
+```
+
+Two caveats worth knowing. `str()` on a `str`-Enum member gives
+`"SwizzleVerdict.BANISHED"`, not `"banished"`, so use `outcome_value()` when
+formatting or dict-keying one; equality and JSON are unaffected. And most of
+each vocabulary is currently unproduced, because the adapters are
+placeholders returning fixed answers, so a scanner will report the unused
+members as unreachable declared state. That is accurate, and it will stop
+being true as the adapters become real.
 
 ## Scaling to Any Number of Systems
 

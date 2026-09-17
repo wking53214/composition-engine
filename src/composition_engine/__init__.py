@@ -13,6 +13,11 @@ CNS Backend (optional):
 CNS Adapters (optional):
 - SWIZZLE, ghost_tools, WIZZLE, Innovation OS adapters
 - register_cns_adapters, register_cns_translation_rules
+
+Outcome vocabularies:
+- SwizzleVerdict, GhostToolsStatus, GhostToolsSeverity, WizzleForensics,
+  InnovationOSDecision: what each system is allowed to answer
+- vocabulary_for, is_declared, outcome_value: read and check those vocabularies
 """
 
 from .core import (
@@ -34,6 +39,19 @@ from .cns_backend import (
 from .cns_integration import (
     HAS_CNS,
     get_cns_status,
+)
+
+from .outcomes import (
+    SwizzleVerdict,
+    GhostToolsStatus,
+    GhostToolsSeverity,
+    WizzleForensics,
+    InnovationOSDecision,
+    SystemModel,
+    CANONICAL_TABLE,
+    vocabulary_for,
+    is_declared,
+    outcome_value,
 )
 
 from .adapters_cns import (
@@ -68,4 +86,15 @@ __all__ = [
     "InnovationOSAdapter",
     "register_cns_adapters",
     "register_cns_translation_rules",
+    # Outcome vocabularies
+    "SwizzleVerdict",
+    "GhostToolsStatus",
+    "GhostToolsSeverity",
+    "WizzleForensics",
+    "InnovationOSDecision",
+    "SystemModel",
+    "CANONICAL_TABLE",
+    "vocabulary_for",
+    "is_declared",
+    "outcome_value",
 ]

@@ -1,6 +1,19 @@
 # CNS Integration: Running Through the CNS Vein
 
-The composition engine is wired directly into CNS infrastructure and uses authoritative implementations from `cns.gate`.
+The composition engine is written to run on CNS infrastructure, preferring
+authoritative implementations from `cns.gate` and falling back to local ones
+when they are absent.
+
+> **Formerly a fixed fallback, now a real fork in the road.** This
+> repository's own package used to be named `cns`, which collided with the
+> external gate infrastructure this bridge reaches for (`cns.gate`): one
+> name, one winner per process, and the local package always won, so
+> `HAS_CNS` could never be `True` no matter what was installed. The package
+> is now `composition_engine` (`src/composition_engine`), so `from cns.gate
+> import ...` resolves to a real, separately-installed `cns` package if one
+> is present on the path, and to the `except ImportError` fallback in
+> `cns_integration.py` if it is not. What follows describes both paths;
+> `get_cns_status()` tells you which one a given run actually took.
 
 ## Architecture
 
@@ -70,7 +83,7 @@ composer = UniversalComposer(
 ### 3. Verify Integration
 
 ```python
-from cns import get_cns_status
+from composition_engine import get_cns_status
 
 status = get_cns_status()
 print(f"Has CNS: {status['has_cns']}")
@@ -129,27 +142,27 @@ for step in trace.steps:
 
 ### Outcome Canonicalization
 
-When composition ends with any model, `cns_canonicalize()` maps to CNS canonical form:
+When composition ends with any model, `cns_canonicalize()` maps to CNS
+canonical form by looking the model and outcome up in `outcomes.py`'s
+`CANONICAL_TABLE` -- the same table `compose_library.py`'s `LibraryComposer`
+uses, not a second hand-written copy (the two used to disagree: this file's
+copy had no branch at all for `ghost_tools_severity`, and silently
+mis-canonicalized anything in that model to a breach). For example:
 
 ```python
-# SWIZZLE verdict → PASS/RETRY/TERMINAL_BREACH
-if model == "swizzle_verdict":
-    if outcome in ("banished", "dismissed"):
-        return "pass"
-    elif outcome in ("escaped", "conjured"):
-        return "terminal_breach"
-    else:
-        return "retry"
-
-# ghost_tools status → PASS/RETRY/TERMINAL_BREACH
-if model == "ghost_tools_status":
-    if outcome == "confirmed":
-        return "pass"
-    elif outcome in ("reasoned", "rejected"):
-        return "terminal_breach"
-    else:
-        return "retry"
+>>> CANONICAL_TABLE[SystemModel.SWIZZLE_VERDICT]
+({"banished": PASS, "dismissed": PASS, "escaped": TERMINAL_BREACH, "conjured": TERMINAL_BREACH}, RETRY)
+>>> CANONICAL_TABLE[SystemModel.GHOST_TOOLS_STATUS]
+({"confirmed": TERMINAL_BREACH, "confirmed_by_review": TERMINAL_BREACH, "rejected": PASS, "suppressed": PASS}, RETRY)
 ```
+
+`ghost_tools_status`'s polarity is not a typo: `CONFIRMED` is ghost_tools'
+strongest evidence a defect is real (its own schema.py groups CONFIRMED and
+CONFIRMED_BY_REVIEW as AUTHORITATIVE), so it's what TERMINAL_BREACH exists
+to name. `REJECTED` (reviewed, not real) and `SUPPRESSED` (real, but
+accepted and waived) both pass -- neither is a live reason to block. See
+the table's own comment in `outcomes.py` for the full account, including
+why this changed from an earlier, inverted version.
 
 **Property**: All system outcomes ultimately map to CNS gate outcomes (PASS/RETRY/TERMINAL_BREACH).
 
@@ -162,7 +175,7 @@ import sys
 sys.path.insert(0, '/path/to/CNS')
 sys.path.insert(0, '/path/to/composition-engine/src')
 
-from cns import (
+from composition_engine import (
     create_cns_composer,
     register_cns_adapters,
     register_cns_translation_rules,
@@ -203,7 +216,7 @@ Composition engine works standalone if CNS is not available:
 
 ```python
 # No CNS required
-from composition_engine.src.cns import UniversalComposer
+from composition_engine import UniversalComposer
 
 composer = UniversalComposer()
 # ... register adapters, execute compositions ...
@@ -226,7 +239,7 @@ When both CNS and composition-engine are available:
 4. **Convergence** detected per CNS rules (RETRY = exploring)
 5. **Canonicalization** maps to CNS gate outcomes
 
-**Result**: Composition engine is not just compatible with CNS—it's an extension of CNS governance infrastructure, running natively on CNS foundations.
+**Result**: Composition engine is designed as an extension of CNS governance infrastructure rather than merely a compatible neighbour. Whether it is running on CNS foundations or on the local stand-ins is a runtime question, answered by `get_cns_status()` -- check it, don't assume: the package-name collision that used to make it always answer "stand-ins" is fixed (see the note at the top of this document), but that only means the real path is *reachable*, not that real CNS happens to be installed in whichever environment is running this.
 
 ## Extending with Custom Backends
 
@@ -255,7 +268,7 @@ composer = UniversalComposer(
 ## Status Check in Code
 
 ```python
-from cns import HAS_CNS, get_cns_status
+from composition_engine import HAS_CNS, get_cns_status
 
 if HAS_CNS:
     print("✅ Running via CNS vein")
@@ -269,10 +282,19 @@ for key, value in status.items():
 
 ## Summary
 
-Composition engine **transparently integrates with CNS**:
+Composition engine **is built to integrate with CNS**:
 - Detects authoritative CNS when available
 - Falls back gracefully if not
-- Exposes integration status at runtime
+- Exposes integration status at runtime via `get_cns_status()`
+
+`get_cns_status()` reports `local_fallback` for both sources whenever a
+real, separately-installed `cns` isn't on the path, and `cns.gate` for both
+whenever one is -- it can no longer report a mix of the two (subject_digest
+and GateOutcome are both imported from the same `try` block in
+cns_integration.py) or be permanently stuck on `local_fallback` the way it
+was before the package-name collision was fixed. Check it rather than
+assuming, in any code whose correctness depends on which implementation it
+got.
 - Uses real CNS semantics for subject binding and canonicalization
 - Can run standalone if needed
 

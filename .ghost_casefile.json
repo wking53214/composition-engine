@@ -1,0 +1,194 @@
+{
+  "cases": [
+    {
+      "detector": "unreachable_declared_state",
+      "shape": "unreachable_declared_state|declared_members=5&documented_as_from_data=no&enum=GhostToolsStatus&member=CONFIRMED&produced_by_tests_only=no&produced_members=2&provenance=removed_from_library&reachable_from_data=no",
+      "outcome": "real",
+      "note": "CONFIRMED is genuinely produced by GhostToolsAdapter.invoke() (test-proven, TestGhostToolsAdapterThroughRealPipeline), returned via a loop variable bound by iterating a module-level tuple. removed_from_library because the prior commit's if/elif cascade had it as an inline attribute-access literal, which counts as production; the table refactor that replaced the cascade (asked for, MAJOR ghost-0f0192120c82) moved it into a module-level constant collection, which ghost_buster's own v1.7.6 fix deliberately excludes from counting as production. A necessary side effect of the dedup, not a regression in behavior. Restructuring back into branches to satisfy the detector would reintroduce the exact duplication it was asked to remove.",
+      "when": "2026-09-17T21:31:10.471252+00:00",
+      "finding_id": "ghost-d0b049df39fe",
+      "file": "src/composition_engine/outcomes.py",
+      "decision": "document"
+    },
+    {
+      "detector": "unreachable_declared_state",
+      "shape": "unreachable_declared_state|declared_members=5&documented_as_from_data=no&enum=GhostToolsStatus&member=CONFIRMED_BY_REVIEW&produced_by_tests_only=no&produced_members=2&provenance=never_produced&reachable_from_data=no",
+      "outcome": "real",
+      "note": "GhostToolsStatus.CONFIRMED_BY_REVIEW is declared so a value read back from real ghost_tools data (a casefile, a human review) has somewhere correct to land -- same pattern ghost_tools' own schema.py documents for this exact member. Not dead; arrives from data, never as a literal in this codebase.",
+      "when": "2026-09-17T21:31:10.471261+00:00",
+      "finding_id": "ghost-f80542295984",
+      "file": "src/composition_engine/outcomes.py",
+      "decision": "document"
+    },
+    {
+      "detector": "unreachable_declared_state",
+      "shape": "unreachable_declared_state|declared_members=5&documented_as_from_data=no&enum=GhostToolsStatus&member=SUPPRESSED&produced_by_tests_only=no&produced_members=2&provenance=never_produced&reachable_from_data=no",
+      "outcome": "real",
+      "note": "GhostToolsStatus.SUPPRESSED is real, active vocabulary in ghost_tools' own triage/baseline flow. Unreachable here only because GhostToolsAdapter is a documented placeholder that doesn't call Baseline.accept(). Resolves when the adapter becomes real.",
+      "when": "2026-09-17T21:31:10.471265+00:00",
+      "finding_id": "ghost-9fcbdc009b06",
+      "file": "src/composition_engine/outcomes.py",
+      "decision": "document"
+    },
+    {
+      "detector": "unreachable_declared_state",
+      "shape": "unreachable_declared_state|declared_members=5&documented_as_from_data=no&enum=InnovationOSDecision&member=EVALUATED&produced_by_tests_only=no&produced_members=4&provenance=never_produced&reachable_from_data=no",
+      "outcome": "real",
+      "note": "InnovationOSDecision.EVALUATED has no real Innovation OS repository in scope to verify against. Unverified, not confirmed dead -- kept per ghost_tools' own precedent of not deleting a member on the strength of an absence that might be this checkout's, not the vocabulary's.",
+      "when": "2026-09-17T21:31:10.471269+00:00",
+      "finding_id": "ghost-fa416ade0589",
+      "file": "src/composition_engine/outcomes.py",
+      "decision": "document"
+    },
+    {
+      "detector": "unreachable_declared_state",
+      "shape": "unreachable_declared_state|declared_members=6&documented_as_from_data=no&enum=SwizzleVerdict&member=CONJURED&produced_by_tests_only=no&produced_members=2&provenance=removed_from_library&reachable_from_data=no",
+      "outcome": "real",
+      "note": "Same root cause as CONFIRMED: SwizzleVerdict.CONJURED was an inline literal in the pre-refactor cascade, now a module-level table key. SwizzleAdapter never actually returned CONJURED before or after this change -- its production status only ever reflected the cascade's literal shape, not real reachability.",
+      "when": "2026-09-17T21:31:10.471274+00:00",
+      "finding_id": "ghost-8b10235ebbfc",
+      "file": "src/composition_engine/outcomes.py",
+      "decision": "document"
+    },
+    {
+      "detector": "unreachable_declared_state",
+      "shape": "unreachable_declared_state|declared_members=6&documented_as_from_data=no&enum=SwizzleVerdict&member=DISMISSED&produced_by_tests_only=no&produced_members=2&provenance=removed_from_library&reachable_from_data=no",
+      "outcome": "real",
+      "note": "Same as CONJURED: SwizzleVerdict.DISMISSED's removed_from_library reading tracks the cascade-to-table refactor, not a behavior change. SwizzleAdapter's placeholder never produced it either way.",
+      "when": "2026-09-17T21:31:10.471278+00:00",
+      "finding_id": "ghost-bed161b4452d",
+      "file": "src/composition_engine/outcomes.py",
+      "decision": "document"
+    },
+    {
+      "detector": "unreachable_declared_state",
+      "shape": "unreachable_declared_state|declared_members=6&documented_as_from_data=no&enum=SwizzleVerdict&member=MISNAMED&produced_by_tests_only=no&produced_members=2&provenance=never_produced&reachable_from_data=no",
+      "outcome": "real",
+      "note": "SwizzleVerdict.MISNAMED is real, active vocabulary in SWIZZLE's own verdict.py. Unreachable here only because SwizzleAdapter is a documented placeholder returning 2 of 6 verdicts. Resolves when the adapter becomes real.",
+      "when": "2026-09-17T21:31:10.471282+00:00",
+      "finding_id": "ghost-c2a792ee014a",
+      "file": "src/composition_engine/outcomes.py",
+      "decision": "document"
+    },
+    {
+      "detector": "unreachable_declared_state",
+      "shape": "unreachable_declared_state|declared_members=6&documented_as_from_data=no&enum=SwizzleVerdict&member=UNSUMMONED&produced_by_tests_only=no&produced_members=2&provenance=never_produced&reachable_from_data=no",
+      "outcome": "real",
+      "note": "SwizzleVerdict.UNSUMMONED is real, active vocabulary in SWIZZLE's own run.py/invoke.py (means the harness itself failed to run). Same placeholder-adapter gap as MISNAMED.",
+      "when": "2026-09-17T21:31:10.471290+00:00",
+      "finding_id": "ghost-de779cdd91e0",
+      "file": "src/composition_engine/outcomes.py",
+      "decision": "document"
+    },
+    {
+      "detector": "unreachable_declared_state",
+      "shape": "unreachable_declared_state|declared_members=4&documented_as_from_data=no&enum=WizzleForensics&member=NEVER_PRODUCED&produced_by_tests_only=no&produced_members=1&reachable_from_data=yes",
+      "outcome": "real",
+      "note": "WizzleForensics.NEVER_PRODUCED arrives only via WizzleAdapter's real path, WizzleForensics(result.value) from ghost_buster.forensics.provenance() -- a non-literal constructor call, by design. Verified end-to-end against ghost_tools' own repo in tests/test_outcomes.py.",
+      "when": "2026-09-17T21:31:10.471296+00:00",
+      "finding_id": "ghost-f7283fb2356a",
+      "file": "src/composition_engine/outcomes.py",
+      "decision": "document"
+    },
+    {
+      "detector": "unreachable_declared_state",
+      "shape": "unreachable_declared_state|declared_members=4&documented_as_from_data=no&enum=WizzleForensics&member=RELOCATED_TO_TESTS&produced_by_tests_only=no&produced_members=1&reachable_from_data=yes",
+      "outcome": "real",
+      "note": "WizzleForensics.RELOCATED_TO_TESTS: same as NEVER_PRODUCED, arrives from the real provenance() call, never as a literal here.",
+      "when": "2026-09-17T21:31:10.471300+00:00",
+      "finding_id": "ghost-6b93a029c46e",
+      "file": "src/composition_engine/outcomes.py",
+      "decision": "document"
+    },
+    {
+      "detector": "unreachable_declared_state",
+      "shape": "unreachable_declared_state|declared_members=4&documented_as_from_data=no&enum=WizzleForensics&member=REMOVED_FROM_LIBRARY&produced_by_tests_only=no&produced_members=1&reachable_from_data=yes",
+      "outcome": "real",
+      "note": "WizzleForensics.REMOVED_FROM_LIBRARY: same as NEVER_PRODUCED, arrives from the real provenance() call, never as a literal here.",
+      "when": "2026-09-17T21:31:10.471304+00:00",
+      "finding_id": "ghost-5de5c50b19af",
+      "file": "src/composition_engine/outcomes.py",
+      "decision": "document"
+    },
+    {
+      "detector": "intra_function_duplicate_block",
+      "shape": "intra_function_duplicate_block",
+      "outcome": "real",
+      "note": "cns_resolve's enum-or-string duplication is intentional defensive shape for the real cns.gate.resolve contract, and the function has zero call sites anywhere in this repo (confirmed by full-repo grep). No live bug, nothing to fix; a table refactor here would be cleanup with no correctness payoff, unlike cns_canonicalize's twin which was fixed because it had actually drifted.",
+      "when": "2026-09-17T21:31:10.471307+00:00",
+      "finding_id": "ghost-46733d5755c9",
+      "file": "src/composition_engine/cns_integration.py",
+      "decision": "document"
+    },
+    {
+      "detector": "structure",
+      "shape": "structure|distribution=ghost-tools&imported_by=src.composition_engine.adapters, src.composition_engine.adapters&kind=undeclared dependency&package=ghost-buster",
+      "outcome": "real",
+      "note": "ghost-buster (ghost_tools) is a deliberately optional import for WizzleAdapter's real-mode forensics check, same try/except shape as cns.gate. Not declared as a hard dependency on purpose: there is no installable URL for it and CI never has it checked out, so the fallback path (honest UNKNOWN) is what CI actually exercises and is tested for.",
+      "when": "2026-09-17T21:31:10.471311+00:00",
+      "finding_id": "ghost-f71811afd7a8",
+      "file": "pyproject.toml",
+      "decision": "document"
+    },
+    {
+      "detector": "unreachable_declared_state",
+      "shape": "unreachable_declared_state|declared_members=6&documented_as_from_data=no&enum=SwizzleVerdict&member=BANISHED&produced_by_tests_only=yes&produced_members=1&provenance=removed_from_library&reachable_from_data=no",
+      "outcome": "real",
+      "note": "SwizzleVerdict.BANISHED is genuinely produced by SwizzleAdapter.invoke()'s real path (test-proven, TestSwizzleAdapterRealAndFallbackPaths), returned via a loop variable bound by iterating the module-level _VERDICT_CONCERN_ORDER tuple. Same root cause and same decision already recorded for GhostToolsStatus.CONFIRMED: a module-level constant collection doesn't count as production per ghost_buster's own v1.7.6 fix, and the indirection is one level past what that fix accounts for. Not restructuring into a branch cascade to satisfy the detector.",
+      "when": "2026-09-17T21:45:17.090199+00:00",
+      "finding_id": "ghost-249a748ea85a",
+      "file": "src/composition_engine/outcomes.py",
+      "decision": "document"
+    },
+    {
+      "detector": "unreachable_declared_state",
+      "shape": "unreachable_declared_state|declared_members=6&documented_as_from_data=no&enum=SwizzleVerdict&member=CONJURED&produced_by_tests_only=no&produced_members=1&provenance=removed_from_library&reachable_from_data=no",
+      "outcome": "real",
+      "note": "SwizzleVerdict.CONJURED: same as BANISHED above, same root cause as the earlier CONJURED/DISMISSED decision (finding id changed because _VERDICT_CONCERN_ORDER's addition shifted line numbers and the 'N other members produced' count). SwizzleAdapter's real path can and does return this when SWIZZLE reports it; proven by test_real_run_against_ghost_tools_reports_a_declared_verdict asserting membership in the full SwizzleVerdict set.",
+      "when": "2026-09-17T21:45:17.090215+00:00",
+      "finding_id": "ghost-314e8a4d1fc0",
+      "file": "src/composition_engine/outcomes.py",
+      "decision": "document"
+    },
+    {
+      "detector": "unreachable_declared_state",
+      "shape": "unreachable_declared_state|declared_members=6&documented_as_from_data=no&enum=SwizzleVerdict&member=DISMISSED&produced_by_tests_only=no&produced_members=1&provenance=removed_from_library&reachable_from_data=no",
+      "outcome": "real",
+      "note": "SwizzleVerdict.DISMISSED: same as CONJURED above.",
+      "when": "2026-09-17T21:45:17.090224+00:00",
+      "finding_id": "ghost-6b26f6f1d264",
+      "file": "src/composition_engine/outcomes.py",
+      "decision": "document"
+    },
+    {
+      "detector": "unreachable_declared_state",
+      "shape": "unreachable_declared_state|declared_members=6&documented_as_from_data=no&enum=SwizzleVerdict&member=ESCAPED&produced_by_tests_only=no&produced_members=1&provenance=removed_from_library&reachable_from_data=no",
+      "outcome": "real",
+      "note": "SwizzleVerdict.ESCAPED: same as CONJURED above.",
+      "when": "2026-09-17T21:45:17.090232+00:00",
+      "finding_id": "ghost-5355108f9489",
+      "file": "src/composition_engine/outcomes.py",
+      "decision": "document"
+    },
+    {
+      "detector": "unreachable_declared_state",
+      "shape": "unreachable_declared_state|declared_members=6&documented_as_from_data=no&enum=SwizzleVerdict&member=MISNAMED&produced_by_tests_only=no&produced_members=1&provenance=never_produced&reachable_from_data=no",
+      "outcome": "real",
+      "note": "SwizzleVerdict.MISNAMED remains a real, active verdict in SWIZZLE's own code (verdict.py) that this composition's real SwizzleAdapter can receive back from run_all() and report -- unreachable only in the narrow sense that no fixture in this session's runs happened to trigger it, not because the adapter can't produce it. Same category as before this session's real-integration pass, re-confirmed.",
+      "when": "2026-09-17T21:45:17.090239+00:00",
+      "finding_id": "ghost-2fcfd82f5bf2",
+      "file": "src/composition_engine/outcomes.py",
+      "decision": "document"
+    },
+    {
+      "detector": "structure",
+      "shape": "structure|distribution=swizzle&imported_by=src.composition_engine.adapters, src.composition_engine.adapters&kind=undeclared dependency&package=swizzle",
+      "outcome": "real",
+      "note": "swizzle (SWIZZLE) is a deliberately optional import for SwizzleAdapter's real-mode run, same try/except shape as cns.gate and ghost-buster. Not declared as a hard dependency on purpose: no installable URL, CI never has it checked out, and the fallback path (honest UNSUMMONED) is what CI actually exercises and is tested for.",
+      "when": "2026-09-17T21:45:17.090247+00:00",
+      "finding_id": "ghost-787278457b11",
+      "file": "pyproject.toml",
+      "decision": "document"
+    }
+  ]
+}
