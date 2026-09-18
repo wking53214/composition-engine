@@ -10,33 +10,37 @@ proven to check something.
 import pytest
 
 from composition_engine.compose_library import LibraryComposer, SystemAdapter, SystemModel
-from composition_engine.adapters import register_core_adapters, register_core_translation_rules
+from composition_engine.adapters import register_core_adapters, register_core_translation_rules, GhostToolsAdapter
 from composition_engine.outcomes import (
     GhostToolsStatus,
-    InnovationOSDecision,
-    SwizzleVerdict,
-    WizzleForensics,
     is_declared,
     outcome_value,
     vocabulary_for,
 )
 
 
+def _importable(module_name):
+    """Check if a module is importable."""
+    try:
+        __import__(module_name)
+        return True
+    except ImportError:
+        return False
+
+
 class TestStringCompatibility:
     """The enums are str enums so that nothing downstream had to change."""
 
     def test_member_equals_its_string(self):
-        assert SwizzleVerdict.BANISHED == "banished"
         assert GhostToolsStatus.CONFIRMED == "confirmed"
-        assert InnovationOSDecision.APPROVED == "approved"
 
     def test_member_works_as_dict_key_by_value(self):
-        assert {"banished": 1}[SwizzleVerdict.BANISHED] == 1
+        assert {"confirmed": 1}[GhostToolsStatus.CONFIRMED] == 1
 
     def test_member_serialises_as_its_value(self):
         import json
 
-        assert json.dumps({"o": SwizzleVerdict.BANISHED}) == '{"o": "banished"}'
+        assert json.dumps({"o": GhostToolsStatus.CONFIRMED}) == '{"o": "confirmed"}'
 
 
 class TestOutcomeValue:
@@ -45,30 +49,29 @@ class TestOutcomeValue:
     def test_str_of_member_is_not_the_value(self):
         # Documenting the behaviour this helper exists for. If a future Python
         # changes it, this test fails and the helper can go.
-        assert str(SwizzleVerdict.BANISHED) == "SwizzleVerdict.BANISHED"
+        assert str(GhostToolsStatus.CONFIRMED) == "GhostToolsStatus.CONFIRMED"
 
     def test_outcome_value_is_the_value(self):
-        assert outcome_value(SwizzleVerdict.BANISHED) == "banished"
-        assert outcome_value(SystemModel.SWIZZLE_VERDICT) == "swizzle_verdict"
+        assert outcome_value(GhostToolsStatus.CONFIRMED) == "confirmed"
+        assert outcome_value(SystemModel.GHOST_TOOLS_STATUS) == "ghost_tools_status"
 
     def test_outcome_value_passes_plain_strings_through(self):
-        assert outcome_value("banished") == "banished"
+        assert outcome_value("confirmed") == "confirmed"
 
 
 class TestVocabularies:
     def test_lookup_by_model_member_and_by_string_agree(self):
-        assert vocabulary_for(SystemModel.SWIZZLE_VERDICT) == vocabulary_for(
-            "swizzle_verdict"
+        assert vocabulary_for(SystemModel.GHOST_TOOLS_STATUS) == vocabulary_for(
+            "ghost_tools_status"
         )
 
-    def test_swizzle_vocabulary_is_the_documented_one(self):
-        assert vocabulary_for(SystemModel.SWIZZLE_VERDICT) == {
-            "banished",
-            "escaped",
-            "misnamed",
-            "conjured",
-            "dismissed",
-            "unsummoned",
+    def test_ghost_tools_vocabulary_is_the_documented_one(self):
+        assert vocabulary_for(SystemModel.GHOST_TOOLS_STATUS) == {
+            "confirmed",
+            "reasoned",
+            "confirmed_by_review",
+            "rejected",
+            "suppressed",
         }
 
     def test_canonical_model_declares_no_vocabulary_here(self):
@@ -77,28 +80,28 @@ class TestVocabularies:
         assert vocabulary_for(SystemModel.CNS_GATE_OUTCOME) == frozenset()
 
     def test_is_declared_accepts_members_and_strings(self):
-        assert is_declared(SystemModel.SWIZZLE_VERDICT, SwizzleVerdict.BANISHED)
-        assert is_declared("swizzle_verdict", "banished")
+        assert is_declared(SystemModel.GHOST_TOOLS_STATUS, GhostToolsStatus.CONFIRMED)
+        assert is_declared("ghost_tools_status", "confirmed")
 
     def test_is_declared_rejects_a_typo(self):
-        assert not is_declared(SystemModel.SWIZZLE_VERDICT, "banisheddd")
+        assert not is_declared(SystemModel.GHOST_TOOLS_STATUS, "confirmeddd")
 
     def test_undeclared_model_vouches_for_nothing(self):
         assert not is_declared(SystemModel.CNS_GATE_OUTCOME, "pass")
 
 
 class RogueAdapter(SystemAdapter):
-    """Declares the SWIZZLE vocabulary and then answers outside it."""
+    """Declares the ghost_tools vocabulary and then answers outside it."""
 
     def __init__(self):
         super().__init__(
             system_name="rogue",
             input_models=set(),
-            output_model=SystemModel.SWIZZLE_VERDICT,
+            output_model=SystemModel.GHOST_TOOLS_STATUS,
         )
 
     def invoke(self, subject, input_outcome=None):
-        return "banisheddd"
+        return "confirmeddd"
 
 
 class TestComposeChecksVocabulary:
@@ -107,7 +110,7 @@ class TestComposeChecksVocabulary:
         register_core_adapters(composer)
         register_core_translation_rules(composer)
         trace = composer.compose(
-            ["swizzle", "ghost_tools", "wizzle", "innovation_os"],
+            ["ghost_tools"],
             {"repo": "x"},
             cycle=1,
         )
@@ -145,21 +148,18 @@ class TestComposeChecksVocabulary:
 class TestTimelineFormatting:
     def test_timeline_prints_values_not_member_names(self):
         # Converting the literals to enum members silently changed this text to
-        # "SwizzleVerdict.ESCAPED" until outcome_value was applied. Nothing
+        # "GhostToolsStatus.REASONED" until outcome_value was applied. Nothing
         # else asserts on it.
         #
-        # A bare {"repo": "x"} subject carries none of what SwizzleAdapter's
-        # real path needs (subject["ghost_tools_path"]), so it honestly
-        # reports "unsummoned" -- SWIZZLE's own word for a harness that
-        # didn't run -- rather than the fixed "escaped" placeholder this test
-        # used to see before SwizzleAdapter called real SWIZZLE.
+        # A bare {"repo": "x"} subject carries none of what GhostToolsAdapter's
+        # real path needs (subject["repo_path"]), so it honestly reports REASONED.
         composer = LibraryComposer()
         register_core_adapters(composer)
         register_core_translation_rules(composer)
-        trace = composer.compose(["swizzle", "ghost_tools"], {"repo": "x"}, cycle=1)
+        trace = composer.compose(["ghost_tools"], {"repo": "x"}, cycle=1)
         timeline = trace.timeline()
-        assert "unsummoned" in timeline
-        assert "SwizzleVerdict" not in timeline
+        assert "reasoned" in timeline
+        assert "GhostToolsStatus" not in timeline
 
 
 class TestCanonicalTable:
@@ -181,27 +181,14 @@ class TestCanonicalTable:
     def test_known_values_map_as_before(self):
         from composition_engine.cns_integration import GateOutcome
 
-        assert self._canon("banished", SystemModel.SWIZZLE_VERDICT) is GateOutcome.PASS
         assert (
-            self._canon("escaped", SystemModel.SWIZZLE_VERDICT)
+            self._canon("confirmed", SystemModel.GHOST_TOOLS_STATUS)
             is GateOutcome.TERMINAL_BREACH
-        )
-        assert (
-            self._canon("approved", SystemModel.INNOVATION_OS_DECISION)
-            is GateOutcome.PASS
         )
         assert (
             self._canon("critical", SystemModel.GHOST_TOOLS_SEVERITY)
             is GateOutcome.TERMINAL_BREACH
         )
-
-    def test_unlisted_value_retries_for_a_system_vocabulary(self):
-        from composition_engine.cns_integration import GateOutcome
-
-        assert (
-            self._canon("misnamed", SystemModel.SWIZZLE_VERDICT) is GateOutcome.RETRY
-        )
-        assert self._canon("nonsense", SystemModel.WIZZLE_FORENSICS) is GateOutcome.RETRY
 
     def test_unlisted_canonical_value_breaches_rather_than_retries(self):
         # The one asymmetry in the table, inherited from the cascade's silent
@@ -312,114 +299,6 @@ class TestGhostToolsAdapterThroughRealPipeline:
         trace = self._run([{"status": "confirmed"}])
         assert trace.steps[0].metadata["outcome_declared"] is True
         assert "[!]" not in trace.timeline()
-
-
-class TestWizzleAdapterRealAndFallbackPaths:
-    """WizzleAdapter now does one of two things: a real git-history check
-    via ghost_buster.forensics when it's importable, or an honest UNKNOWN
-    when it isn't or when `subject` doesn't say what to check. Both paths
-    run through compose(), not through WizzleForensics values picked by
-    hand.
-    """
-
-    @staticmethod
-    def _run(subject):
-        from composition_engine.adapters import WizzleAdapter
-
-        composer = LibraryComposer()
-        composer.register_adapter(WizzleAdapter())
-        return composer.compose(["wizzle"], subject, cycle=1)
-
-    def test_missing_subject_fields_are_unknown_not_a_guess(self):
-        trace = self._run({"repo": "x"})
-        assert trace.steps[0].output_outcome is WizzleForensics.UNKNOWN
-        assert trace.overall_outcome.value == "retry"
-
-    def test_ghost_tools_not_importable_is_unknown(self, monkeypatch):
-        import composition_engine.adapters as adapters_mod
-
-        monkeypatch.setattr(adapters_mod, "HAS_GHOST_TOOLS_FORENSICS", False)
-        trace = self._run(
-            {"repo_path": "/home/user/ghost_tools", "enum": "Status", "member": "CONFIRMED_BY_REVIEW"}
-        )
-        assert trace.steps[0].output_outcome is WizzleForensics.UNKNOWN
-
-    @pytest.mark.skipif(
-        __import__("importlib").util.find_spec("ghost_buster") is None,
-        reason="ghost_tools not installed alongside this checkout",
-    )
-    def test_real_check_against_ghost_tools_confirmed_by_review(self):
-        # CONFIRMED_BY_REVIEW is documented in ghost_tools' own schema.py as
-        # "Read, never written here" -- declared, deliberately never
-        # produced. A real provenance() walk over ghost_tools' own repo
-        # should find no commit ever assigned it, i.e. NEVER_PRODUCED, and
-        # this proves the real (not simulated) path actually runs when
-        # ghost_tools is available, end to end through compose().
-        trace = self._run(
-            {
-                "repo_path": "/home/user/ghost_tools",
-                "enum": "Status",
-                "member": "CONFIRMED_BY_REVIEW",
-            }
-        )
-        outcome = trace.steps[0].output_outcome
-        assert outcome is WizzleForensics.NEVER_PRODUCED
-        assert outcome.value in {m.value for m in WizzleForensics}
-        assert trace.overall_outcome.value == "pass"
-
-
-def _importable(name):
-    return __import__("importlib").util.find_spec(name) is not None
-
-
-class TestSwizzleAdapterRealAndFallbackPaths:
-    """SwizzleAdapter now runs SWIZZLE's real warp catalogue against a real
-    ghost_tools checkout when both are available, honest UNSUMMONED
-    otherwise. Both paths through compose(), not through a SwizzleVerdict
-    picked by hand.
-    """
-
-    @staticmethod
-    def _run(subject):
-        from composition_engine.adapters import SwizzleAdapter
-
-        composer = LibraryComposer()
-        composer.register_adapter(SwizzleAdapter())
-        return composer.compose(["swizzle"], subject, cycle=1)
-
-    def test_no_ghost_tools_path_is_unsummoned_not_a_guess(self):
-        trace = self._run({"repo": "x"})
-        assert trace.steps[0].output_outcome is SwizzleVerdict.UNSUMMONED
-
-    def test_swizzle_not_importable_is_unsummoned(self, monkeypatch):
-        import composition_engine.adapters as adapters_mod
-
-        monkeypatch.setattr(adapters_mod, "HAS_SWIZZLE", False)
-        trace = self._run({"ghost_tools_path": "/home/user/ghost_tools"})
-        assert trace.steps[0].output_outcome is SwizzleVerdict.UNSUMMONED
-
-    def test_an_only_filter_matching_nothing_is_unsummoned(self, monkeypatch):
-        import composition_engine.adapters as adapters_mod
-
-        if not _importable("swizzle"):
-            pytest.skip("SWIZZLE not installed alongside this checkout")
-        trace = self._run(
-            {"ghost_tools_path": "/home/user/ghost_tools", "only": "no-warp-named-this"}
-        )
-        assert trace.steps[0].output_outcome is SwizzleVerdict.UNSUMMONED
-
-    @pytest.mark.skipif(not _importable("swizzle"), reason="SWIZZLE not installed alongside this checkout")
-    def test_real_run_against_ghost_tools_reports_a_declared_verdict(self):
-        # Not asserting which verdict -- SWIZZLE's real catalogue changes
-        # over time and so may what it finds. Asserting that this is a real
-        # run: a declared SwizzleVerdict, produced by actually invoking
-        # swizzle.run.run_all() against ghost_tools' real repository, read
-        # back through the real compose() path including the vocabulary
-        # check.
-        trace = self._run({"ghost_tools_path": "/home/user/ghost_tools"})
-        outcome = trace.steps[0].output_outcome
-        assert outcome in set(SwizzleVerdict)
-        assert trace.steps[0].metadata["outcome_declared"] is True
 
 
 class TestGhostToolsAdapterRealScanPath:

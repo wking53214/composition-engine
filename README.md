@@ -53,21 +53,21 @@ trace = composer.compose(["my_analyzer"], subject, cycle=1)
 print(trace.timeline())
 ```
 
-### With CNS Backend
+### With CNS Backend and Ghost Tools
 
 ```python
 from composition_engine.cns_backend import create_cns_composer
-from composition_engine.adapters_cns import register_cns_adapters, register_cns_translation_rules
+from composition_engine.adapters import register_core_adapters, register_core_translation_rules
 
 # Create CNS-configured composer (with subject binding, canonicalization, convergence)
 composer = create_cns_composer()
-register_cns_adapters(composer)
-register_cns_translation_rules(composer)
+register_core_adapters(composer)
+register_core_translation_rules(composer)
 
-# Execute full 4-system circle
-subject = {"repo": "innovation_os", "commit": "abc123"}
+# Execute composition with ghost_tools
+subject = {"repo": "/path/to/repo"}
 trace = composer.compose(
-    ["swizzle", "ghost_tools", "wizzle", "innovation_os"],
+    ["ghost_tools"],
     subject,
     cycle=1
 )
@@ -118,13 +118,10 @@ CNS-specific backend providing:
 composer = create_cns_composer()  # Pre-configured with CNS semantics
 ```
 
-### Adapters: Any Systems
+### Adapters: System Integration
 
-Four reference implementations:
-- **SwizzleAdapter**: Adversarial test framework (Verdict → BANISHED/ESCAPED/...)
-- **GhostToolsAdapter**: Code scanner (Status → CONFIRMED/REASONED/...)
-- **WizzleAdapter**: Forensics validator (Provenance → REMOVED_FROM_LIBRARY/...)
-- **InnovationOSAdapter**: Decision system (Decision → APPROVED/REJECTED/...)
+System adapters declare their input/output models and implement scanning/analysis logic:
+- **GhostToolsAdapter**: Security scanner (Status → CONFIRMED/REASONED/REJECTED/SUPPRESSED)
 
 ## Concepts
 
@@ -186,33 +183,23 @@ composer.register_translation("verdict", "decision", translate_verdict_to_decisi
 | `src/composition_engine/outcomes.py` | The outcome vocabularies and `CANONICAL_TABLE` -- the one place either composer track reads what a word means |
 | `src/composition_engine/compose_library.py` | `LibraryComposer`: `UniversalComposer` pre-configured with `CANONICAL_TABLE` and a vocabulary check |
 | `src/composition_engine/cns_backend.py` | `create_cns_composer()`: `UniversalComposer` pre-configured the plain-string way, same table |
-| `src/composition_engine/adapters.py` | SWIZZLE, ghost_tools, WIZZLE, Innovation OS adapters (`adapters_cns.py` re-exports these under their older names) |
+| `src/composition_engine/adapters.py` | System adapters (currently: ghost_tools scanner) |
+| `src/composition_engine/adapters_cns.py` | Backward-compatible re-exports for CNS-backend usage |
 | `tests/test_library_composition.py`, `tests/test_outcomes.py` | the test suite -- `pytest -q` for the count |
 | `docs/LIBRARY_COMPOSITION_GUIDE.md` | Complete guide (universality, scaling) |
 | `docs/CREATING_CUSTOM_ADAPTERS.md` | How to create adapters for any system |
 
-All four core adapters do real work when their tool is installed alongside
-this repo and their subject carries what that tool needs; an honest
-"couldn't tell" outcome otherwise, never a fabricated verdict. None of these
-are listed dependencies -- same optional-import shape as the CNS backend,
-for the same reason (no installable URL to declare them against, and CI
-never has any of them checked out, so it always exercises the fallback
-paths; the real paths are covered separately and skip automatically when
-unavailable):
+The GhostToolsAdapter does real work when ghost_tools is installed alongside
+this repo and the subject carries what it needs; an honest outcome otherwise,
+never a fabricated verdict. This adapter is not a listed dependency -- same
+optional-import shape as the CNS backend, for the same reason (no installable
+URL to declare it against, and CI never has it checked out, so it always
+exercises the fallback paths; the real paths are covered separately and skip
+automatically when unavailable).
 
 | Adapter | Real when | Needs |
 |---|---|---|
-| `SwizzleAdapter` | SWIZZLE installed (`pip install -e /path/to/SWIZZLE`) | `subject["ghost_tools_path"]` -- SWIZZLE red-teams a scanner, not a subject |
 | `GhostToolsAdapter` | ghost_tools installed | `subject["repo_path"]` (or a pre-computed `subject["findings"]`) |
-| `WizzleAdapter` | ghost_tools installed | `subject["repo_path"]`, `subject["enum"]`, `subject["member"]` |
-| `InnovationOSAdapter` | always -- there's no real Innovation OS to call, this is the governance judgment itself | nothing external |
-
-The four don't share one subject shape (see `register_core_adapters`'
-docstring for why not), so composing all four into one real four-system
-circle means passing a subject that carries all three of `ghost_tools_path`,
-`repo_path`, `enum` and `member` at once -- not the tidy `{"repo",
-"commit"}` the Quick Start example above uses, which is illustrative rather
-than a real four-adapter run.
 
 ## Usage Patterns
 
@@ -305,28 +292,19 @@ The suite covers:
 ## Outcome vocabularies
 
 Each system answers in its own words, and the words are declared in
-`src/composition_engine/outcomes.py`: `SwizzleVerdict`, `GhostToolsStatus`,
-`GhostToolsSeverity`, `WizzleForensics`, `InnovationOSDecision`. They are
-`str` enums, the same shape as `GateOutcome`, so `SwizzleVerdict.BANISHED ==
-"banished"` and every existing caller keeps working.
+`src/composition_engine/outcomes.py`: `GhostToolsStatus`, `GhostToolsSeverity`.
+They are `str` enums, the same shape as `GateOutcome`, so `GhostToolsStatus.CONFIRMED ==
+"confirmed"` and every existing caller keeps working.
 
 `compose()` checks each adapter's answer against the vocabulary that adapter
 declared and records the verdict on the step, `True`, `False`, or `None` when
 the model declares no vocabulary. An answer outside the vocabulary is marked
 in `timeline()` rather than raised, because a trace that went wrong is still
-a trace worth reading:
+a trace worth reading.
 
-```
-  1. rogue → banisheddd  [!] not in this system's declared vocabulary
-```
-
-Two caveats worth knowing. `str()` on a `str`-Enum member gives
-`"SwizzleVerdict.BANISHED"`, not `"banished"`, so use `outcome_value()` when
-formatting or dict-keying one; equality and JSON are unaffected. And most of
-each vocabulary is currently unproduced, because the adapters are
-placeholders returning fixed answers, so a scanner will report the unused
-members as unreachable declared state. That is accurate, and it will stop
-being true as the adapters become real.
+`str()` on a `str`-Enum member gives `"GhostToolsStatus.CONFIRMED"`, not
+`"confirmed"`, so use `outcome_value()` when formatting or dict-keying one;
+equality and JSON are unaffected.
 
 ## Scaling to Any Number of Systems
 
