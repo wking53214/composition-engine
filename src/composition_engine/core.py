@@ -154,18 +154,32 @@ class UniversalComposer:
     ) -> None:
         """Register translation rule between outcome models."""
         self.translation_rules[(from_model, to_model)] = rule
+        self._build_compatibility_graph()
 
     def _build_compatibility_graph(self) -> None:
-        """Build graph of which systems can feed into which."""
+        """Build graph of which systems can feed into which.
+
+        Includes both direct edges (output_model in input_models) and
+        translation-mediated edges (translation rule exists between models).
+        """
         self.graph = {name: set() for name in self.adapters.keys()}
 
         for from_name, from_adapter in self.adapters.items():
             for to_name, to_adapter in self.adapters.items():
                 if from_name == to_name:
                     continue
-                # Can from_adapter → to_adapter?
+
+                # Direct compatibility: output_model ∈ input_models
                 if from_adapter.output_model in to_adapter.input_models:
                     self.graph[from_name].add(to_name)
+                    continue
+
+                # Translation-mediated compatibility: rule exists for this
+                # (from_model, to_model) pair, and target model is acceptable
+                for to_model in to_adapter.input_models:
+                    if (from_adapter.output_model, to_model) in self.translation_rules:
+                        self.graph[from_name].add(to_name)
+                        break
 
     def find_composition_path(
         self,
