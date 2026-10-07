@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Universal system orchestrator: compose heterogeneous systems by declared outcome model, without a universal translator"
 readme = "README.md"
 requires-python = ">=3.11"
-authors = [{ name = "William King" }]
+authors = [{ name = "William N. King" }]
 keywords = ["orchestration", "composition", "adapters", "outcome-model"]
 dependencies = []
 
