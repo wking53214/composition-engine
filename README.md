@@ -1,50 +1,20 @@
-# composition-engine
+# composition-engine (retired)
 
-Experimental **universal composer**: systems declare input/output outcome models; BFS routes compatible chains; translation rules only where models differ. Complementary research to the observe-perceive gate; **not a replacement** for the governed action chain.
+This repository is retired. Its job, deciding what a set of systems together allow, is done by CNS:
 
-## 1. Pipeline Position & Role
+- `cns_composition.super_gate.SuperGate` is the one control point. It is built from repository gates, refuses a gate at an end its repository does not declare, treats a gate with no candidate as a TERMINAL_BREACH, and says `allowed` only for a complete, all-PASS decision in which every verdict records what it judged.
+- `cns_composition.gate_chain` and `cns_composition.compose_library` hold the chain runner and the composer. Unlike the composer here, they resolve every verdict, so a breach in the middle of a path is not lost when the last gate passes.
 
-**EXPERIMENTAL ORCHESTRATION**, beside the gate, not in it. Does not admit, decide, conserve, execute, or custody.
+CNS: https://github.com/wking53214/CNS
 
-## 2. Full System Scope & Architectural Depth
+## Why it was retired
 
-Real small engine (`src/composition_engine/core.py` ~330 lines):
+- It read only the last step's outcome.
+- Its one adapter (ghost_tools) and its vocabulary table had CNS-side equivalents, and no repository imported it.
+- Its table mapped a confirmed ghost_tools finding to a breach, the opposite of CNS and ghost_tools, so one finding could get opposite verdicts depending on which of them judged it.
 
-- `SystemAdapter`: `system_name`, `input_models`, `output_model`, `invoke(subject, input_outcome) -> str`
-- `UniversalComposer`: registry, compatibility graph, BFS `find_composition_path`, `compose()`
-- `LibraryComposer` / `create_cns_composer()` wrap `CANONICAL_TABLE`
-- CNS optional: `from cns.gate import GateOutcome, subject_digest, resolve` else local fallback (package renamed so it does not shadow `cns`)
+## The source
 
-**Only concrete adapter:** `GhostToolsAdapter`. `register_core_translation_rules` is `pass`. SWIZZLE/WIZZLE/Innovation OS named in comments — **no adapters**.
-
-`CANONICAL_TABLE` polarity: CONFIRMED/CONFIRMED_BY_REVIEW → **TERMINAL_BREACH**; REJECTED/SUPPRESSED → PASS; REASONED → RETRY. Unrecognized → TERMINAL_BREACH.
-
-`pyproject` `dependencies = []`. ~49 tests. CI exists. Python ≥ 3.11.
-
-## 3. What It Does NOT Do / Non-Goals
-
-Does not compose "67+ heterogeneous systems". Does not govern action or bind human authority. Does not replace CNS or observe-perceive.
-
-## 4. Brutally Honest Current Status & Gaps
-
-README scale claim is aspiration. Docs longer than the engine. CNS and ghost_tools are optional undeclared siblings; CI always hits fallbacks. Vocabulary miss → **warning on the trace, not raise**. Subject digest SHA-256 of `json.dumps(subject)` when CNS backend used. No `canonical_fields`.
-
-## 5. Core Invariants & Guarantees
-
-Unknown system / empty path → `ValueError`. Proven ghost_tools CONFIRMED is a breach in the canonical table (blocks), which is the adult part of the design.
-
-## 6. Inputs, Outputs & Type Contracts
-
-`GateOutcome`: `pass | retry | terminal_breach`. `GhostToolsStatus` / `Severity`. `CompositionStep{system_name, input_outcome, output_outcome, output_model, metadata, subject_hash}`.
-
-## 7. Stack Integration Topology
-
-```text
-ghost_tools (opt adapter) → UniversalComposer → string outcomes
-observe-perceive ✗ replacement
-private CNS (opt)
-```
-
-**Safe to archive for live-path integrity**; keep only if you intend to grow adapters.
+The code stays in this repository's git history. The last commit that contains it is `0501d20` (its fallback digest is byte-identical to `cns.gate.subject_digest` on CNS's 24 published vectors).
 
 Apache-2.0.
