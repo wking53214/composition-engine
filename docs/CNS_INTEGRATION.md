@@ -138,7 +138,7 @@ for step in trace.steps:
 # Different subject → different hash (outcome bound to content)
 ```
 
-**Implementation**: CNS's `subject_digest()` computes SHA256 of `json.dumps(subject, sort_keys=True)`.
+**Implementation**: CNS's `subject_digest()` computes SHA256 of a length-prefixed canonical encoding, not of JSON. The local fallback reproduces that encoding, so a digest bound without CNS verifies with it.
 
 ### Outcome Canonicalization
 
@@ -224,7 +224,7 @@ composer = UniversalComposer()
 
 Falls back to local implementations:
 - GateOutcome: Simple enum
-- subject_digest: SHA256 (same as CNS)
+- subject_digest: SHA256 of the same canonical encoding (digest-identical to CNS)
 - Convergence: Simple RETRY check
 
 **Use case**: Integrate composition engine into other systems without requiring CNS dependency.
